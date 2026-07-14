@@ -63,7 +63,10 @@ mod tests {
     fn double_star_matches_root_and_nested_paths() {
         assert!(glob_match("**/AGENTS.md", "AGENTS.md"));
         assert!(glob_match("**/AGENTS.md", "apps/api/AGENTS.md"));
-        assert!(glob_match(".claude/**/*.md", ".claude/skills/attest/SKILL.md"));
+        assert!(glob_match(
+            ".claude/**/*.md",
+            ".claude/skills/attest/SKILL.md"
+        ));
         assert!(glob_match("docs/**", "docs/design/notes.md"));
         assert!(!glob_match("docs/**/*.md", "src/main.rs"));
     }
