@@ -84,7 +84,7 @@ pub(super) fn resolve(token: &Token, facts: &dyn RepoFacts) -> Resolution {
     if let Some(suggestion) = nearest {
         return Resolution::NearMiss {
             ns: Namespace::Script,
-            suggestion,
+            suggestion: Some(suggestion),
             note: "脚本可能已改名".to_owned(),
             searched: vec![
                 "package.json#scripts".into(),
@@ -92,6 +92,7 @@ pub(super) fn resolve(token: &Token, facts: &dyn RepoFacts) -> Resolution {
                 "justfile targets".into(),
                 "cargo aliases".into(),
             ],
+            alternatives: Vec::new(),
         };
     }
     Resolution::Broken {

@@ -37,6 +37,11 @@ pub trait RepoFacts: Debug {
         Vec::new()
     }
     fn find_basename(&self, name: &str) -> Vec<String>;
+    /// 路径是否命中仓库的 ignore 规则。文档引用了被忽略的路径，
+    /// 多半在说运行时产物，裁决时只降级不判红。默认按不忽略处理。
+    fn path_ignored(&self, _rel: &str) -> bool {
+        false
+    }
     fn script(&self, name: &str) -> Option<ScriptOrigin>;
     fn script_names(&self) -> Vec<String>;
     fn workspace_pkg(&self, name: &str) -> bool;

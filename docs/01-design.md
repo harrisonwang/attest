@@ -117,7 +117,7 @@ symbol 用 grep 而非 tree-sitter 是刻意的 v1 取舍：grep 的假绿（词
 
 token 的解析基目录（`Base`）按序尝试，首个命中即绑定：
 
-1. **doc-dir**：文档自身所在目录（探针教训 #2：SKILL.md 的 `phases/` 相对自身成立）
+1. **doc-dir**：文档自身所在目录（探针教训 #2：例如某个被扫仓库 SKILL.md 里的 `phases/`，只有相对文档自身才成立）
 2. **project-root**：从文档向上最近的含 manifest（package.json/Cargo.toml/go.mod/pyproject.toml）的目录
 3. **repo-root**：仓库根
 4. **workspace 命名空间**：与目录无关的名字空间（包名、workspace member、`--filter` 目标）
@@ -252,4 +252,4 @@ context-guard = true
 立项讨论中挂起的两个问题，方案如下，实现中再验证：
 
 1. **lock 审批流**：复用 git review（§10）。`proposed` 条目由 `attest extract` 产生，PR 审阅即审批，无新 UI。agent 可以代人审（Claude Code 里 review lock diff），但合入动作留给人的 merge 权限——与 vouch 的"公证人不替你签字"立场一致。
-2. **monorepo 作用域**：四级基目录序 + 钉 scope 配置（§6）。探针的 `phases/` 案例已验证 doc-dir 优先的必要性；歧义不报警只记 evidence，等真实语料里出现歧义伤害再考虑升级策略。
+2. **monorepo 作用域**：四级基目录序 + 钉 scope 配置（§6）。探针里的 `phases/` 示例已验证 doc-dir 优先的必要性；歧义不报警只记 evidence，等真实语料里出现歧义伤害再考虑升级策略。

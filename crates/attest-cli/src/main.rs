@@ -1431,6 +1431,43 @@ mod tests {
     }
 
     #[test]
+    fn gitignored_directory_reference_downgrades_to_suspect() {
+        let directory = tempfile::tempdir().unwrap();
+        fs::write(directory.path().join(".gitignore"), "runtime/\n").unwrap();
+        fs::write(
+            directory.path().join("AGENTS.md"),
+            "Agents drop events into `runtime/queue/`.\n",
+        )
+        .unwrap();
+        init_git(directory.path());
+
+        let report = run_check(
+            directory.path(),
+            &Config::default(),
+            None,
+            None,
+            true,
+            false,
+            HashSet::new(),
+        )
+        .unwrap();
+
+        let finding = report
+            .findings
+            .iter()
+            .find(|finding| finding.token == "runtime/queue/")
+            .unwrap();
+        assert_eq!(finding.verdict, Verdict::Suspect);
+        assert!(
+            finding
+                .evidence
+                .note
+                .as_deref()
+                .is_some_and(|note| note.contains("ignore"))
+        );
+    }
+
+    #[test]
     fn github_escaping_handles_workflow_commands() {
         assert_eq!(escape_property("a:b,c"), "a%3Ab%2Cc");
         assert_eq!(escape_data("a%\nb"), "a%25%0Ab");

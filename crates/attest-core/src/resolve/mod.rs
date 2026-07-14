@@ -19,9 +19,11 @@ pub(crate) enum Resolution {
     },
     NearMiss {
         ns: Namespace,
-        suggestion: String,
+        /// 只有把握大（唯一候选）时才给出改法；拿不准就只给 note 和候选列表。
+        suggestion: Option<String>,
         note: String,
         searched: Vec<String>,
+        alternatives: Vec<String>,
     },
     Broken {
         ns: Namespace,
@@ -79,10 +81,12 @@ pub(crate) fn evidence_for(resolution: &Resolution) -> BindingEvidence {
             suggestion,
             note,
             searched,
+            alternatives,
             ..
         } => BindingEvidence {
             searched: searched.clone(),
-            nearest: Some(suggestion.clone()),
+            nearest: suggestion.clone(),
+            alternatives: alternatives.clone(),
             note: Some(note.clone()),
             ..BindingEvidence::default()
         },

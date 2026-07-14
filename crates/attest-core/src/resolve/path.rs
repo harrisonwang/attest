@@ -60,9 +60,10 @@ pub(super) fn resolve(token: &Token, facts: &dyn RepoFacts) -> Resolution {
         {
             return Resolution::NearMiss {
                 ns: Namespace::Path,
-                suggestion: referent,
-                note: "文件存在，但源码行号或符号定位无法确定性确认".to_owned(),
+                suggestion: None,
+                note: "文件存在，但行号或符号定位对不上，可能已经过时".to_owned(),
                 searched: vec!["source locator".into()],
+                alternatives: vec![referent],
             };
         }
         let tier = if candidate.starts_with("./") || candidate.starts_with("../") {
@@ -94,9 +95,10 @@ pub(super) fn resolve(token: &Token, facts: &dyn RepoFacts) -> Resolution {
         {
             return Resolution::NearMiss {
                 ns: Namespace::Path,
-                suggestion: referent,
-                note: "文件存在，但源码行号或符号定位无法确定性确认".to_owned(),
+                suggestion: None,
+                note: "文件存在，但行号或符号定位对不上，可能已经过时".to_owned(),
                 searched: vec!["contextual parent path".into()],
+                alternatives: vec![referent],
             };
         }
         return Resolution::Bound {
@@ -123,18 +125,43 @@ pub(super) fn resolve(token: &Token, facts: &dyn RepoFacts) -> Resolution {
         }
     }
 
-    let basename = Path::new(candidate)
-        .file_name()
-        .and_then(|name| name.to_str())
-        .unwrap_or(candidate);
-    let relocated = facts.find_basename(basename);
-    if let Some(suggestion) = relocated.first() {
+    if facts.path_ignored(candidate) {
         return Resolution::NearMiss {
             ns: Namespace::Path,
-            suggestion: suggestion.clone(),
-            note: "路径可能已移动".to_owned(),
-            searched: vec!["doc-dir".into(), "project-root".into(), "repo-root".into()],
+            suggestion: None,
+            note: "路径命中仓库的 ignore 规则，多半是运行时产物".to_owned(),
+            searched: vec![".gitignore".into()],
+            alternatives: Vec::new(),
         };
+    }
+    // owner/repo 这类仓库缩写不做"搬家"猜测，不然会被仓库里的同名目录误配上。
+    // 缩写的典型形状：正好两段、末段无扩展名、不带尾斜杠，且首段在仓库里不存在。
+    // 真实的文件搬家要么带扩展名，要么以 / 结尾，要么首段还在，不受影响。
+    let segments: Vec<&str> = candidate.split('/').collect();
+    let slug_shape = segments.len() == 2
+        && !candidate.ends_with('/')
+        && Path::new(candidate).extension().is_none()
+        && !facts
+            .path_bases(&token.doc)
+            .into_iter()
+            .any(|base| facts.file_exists(&token.doc, base, segments[0]));
+    if !slug_shape {
+        let basename = Path::new(candidate)
+            .file_name()
+            .and_then(|name| name.to_str())
+            .unwrap_or(candidate);
+        let relocated = facts.find_basename(basename);
+        if !relocated.is_empty() {
+            // 唯一命中才敢说"应改为"；多个同名就只列候选，留给人判断。
+            let suggestion = (relocated.len() == 1).then(|| relocated[0].clone());
+            return Resolution::NearMiss {
+                ns: Namespace::Path,
+                suggestion,
+                note: "同名文件出现在仓库其他位置，路径可能已移动".to_owned(),
+                searched: vec!["doc-dir".into(), "project-root".into(), "repo-root".into()],
+                alternatives: relocated,
+            };
+        }
     }
     if facts.has_go_mod() && looks_like_go_import(candidate) {
         return Resolution::NoMatch;

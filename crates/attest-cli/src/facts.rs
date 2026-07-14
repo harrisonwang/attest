@@ -18,10 +18,12 @@ use crate::glob::compile_glob;
 #[derive(Debug)]
 pub struct FsRepoFacts {
     root: PathBuf,
+    is_git: bool,
     files: Vec<String>,
     known_paths: HashSet<String>,
     basenames: HashMap<String, Vec<String>>,
     word_hits: Mutex<HashMap<String, Option<FirstHit>>>,
+    ignore_hits: Mutex<HashMap<String, bool>>,
     scripts: HashMap<String, ScriptOrigin>,
     packages: HashSet<String>,
     repo_bins: HashMap<String, String>,
@@ -74,12 +76,15 @@ impl FsRepoFacts {
             .iter()
             .map(|(pattern, base)| Ok((compile_glob(pattern)?, *base)))
             .collect::<Result<Vec<_>>>()?;
+        let is_git = root.join(".git").exists();
         let mut facts = Self {
             root,
+            is_git,
             files,
             known_paths,
             basenames,
             word_hits: Mutex::new(HashMap::new()),
+            ignore_hits: Mutex::new(HashMap::new()),
             scripts: HashMap::new(),
             packages: HashSet::new(),
             repo_bins: HashMap::new(),
@@ -541,6 +546,35 @@ impl RepoFacts for FsRepoFacts {
 
     fn find_basename(&self, name: &str) -> Vec<String> {
         self.basenames.get(name).cloned().unwrap_or_default()
+    }
+
+    fn path_ignored(&self, rel: &str) -> bool {
+        // 文档提到的路径命中 .gitignore，多半是运行时产物，只在这里问 git 一次并缓存。
+        if !self.is_git {
+            return false;
+        }
+        let key = rel.trim_end_matches('/').to_owned();
+        if key.is_empty() {
+            return false;
+        }
+        if let Some(cached) = self
+            .ignore_hits
+            .lock()
+            .expect("ignore cache is not poisoned")
+            .get(&key)
+        {
+            return *cached;
+        }
+        let ignored = Command::new("git")
+            .args(["check-ignore", "-q", "--", &key])
+            .current_dir(&self.root)
+            .output()
+            .is_ok_and(|output| output.status.success());
+        self.ignore_hits
+            .lock()
+            .expect("ignore cache is not poisoned")
+            .insert(key, ignored);
+        ignored
     }
 
     fn script(&self, name: &str) -> Option<ScriptOrigin> {

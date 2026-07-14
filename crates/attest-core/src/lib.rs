@@ -1,6 +1,7 @@
 mod engine;
 mod extract;
 mod facts;
+mod guard;
 mod model;
 mod resolve;
 

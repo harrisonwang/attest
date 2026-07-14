@@ -52,9 +52,10 @@ pub(super) fn resolve(token: &Token, facts: &dyn RepoFacts) -> Resolution {
     {
         return Resolution::NearMiss {
             ns: Namespace::Package,
-            suggestion,
+            suggestion: Some(suggestion),
             note: "workspace 包名可能已变化".to_owned(),
             searched: vec!["workspace manifests".into()],
+            alternatives: Vec::new(),
         };
     }
     Resolution::Broken {
