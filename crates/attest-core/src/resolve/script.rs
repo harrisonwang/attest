@@ -3,7 +3,9 @@ use crate::{
     extract::{has_dynamic_placeholder, has_wildcard},
 };
 
-use super::{Resolution, edit_distance, wildcard_match};
+use crate::glob::name_match;
+
+use super::{Resolution, edit_distance};
 
 pub(super) fn resolve(token: &Token, facts: &dyn RepoFacts) -> Resolution {
     let Some(command) = &token.command else {
@@ -40,7 +42,7 @@ pub(super) fn resolve(token: &Token, facts: &dyn RepoFacts) -> Resolution {
         let mut matches = facts
             .script_names()
             .into_iter()
-            .filter(|name| wildcard_match(script, name))
+            .filter(|name| name_match(script, name))
             .collect::<Vec<_>>();
         matches.sort();
         let Some(name) = matches.first() else {

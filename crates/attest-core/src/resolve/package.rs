@@ -3,7 +3,9 @@ use crate::{
     extract::{has_dynamic_placeholder, has_wildcard},
 };
 
-use super::{Resolution, wildcard_match};
+use crate::glob::name_match;
+
+use super::Resolution;
 
 pub(super) fn resolve(token: &Token, facts: &dyn RepoFacts) -> Resolution {
     let Some(command) = &token.command else {
@@ -24,7 +26,7 @@ pub(super) fn resolve(token: &Token, facts: &dyn RepoFacts) -> Resolution {
         let mut matches = facts
             .workspace_packages()
             .into_iter()
-            .filter(|name| wildcard_match(package, name))
+            .filter(|name| name_match(package, name))
             .collect::<Vec<_>>();
         matches.sort();
         let Some(referent) = matches.first().cloned() else {

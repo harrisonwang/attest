@@ -112,24 +112,3 @@ pub(crate) fn edit_distance(left: &str, right: &str) -> usize {
     }
     previous.last().copied().unwrap_or(0)
 }
-
-pub(crate) fn wildcard_match(pattern: &str, candidate: &str) -> bool {
-    let mut previous = vec![false; candidate.chars().count() + 1];
-    previous[0] = true;
-    let candidate: Vec<_> = candidate.chars().collect();
-    for pattern_char in pattern.chars() {
-        let mut current = vec![false; candidate.len() + 1];
-        if pattern_char == '*' {
-            current[0] = previous[0];
-        }
-        for (index, candidate_char) in candidate.iter().enumerate() {
-            current[index + 1] = match pattern_char {
-                '*' => previous[index + 1] || current[index],
-                '?' => previous[index],
-                _ => previous[index] && pattern_char == *candidate_char,
-            };
-        }
-        previous = current;
-    }
-    previous.last().copied().unwrap_or(false)
-}

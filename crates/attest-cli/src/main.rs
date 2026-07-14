@@ -1,6 +1,5 @@
 mod config;
 mod facts;
-mod glob;
 
 use std::{
     collections::{BTreeSet, HashSet},
@@ -15,12 +14,13 @@ use anyhow::{Context, Result};
 use attest_core::{
     Anchor, Base, BaselineEntry, BinKnowledge, CheckOptions, Claim, ClaimLock, ClaimStatus,
     Finding, Namespace, RepoFacts, Report, Stats, Verdict, check_claims, check_document,
+    glob_match,
 };
 use clap::{Parser, Subcommand, ValueEnum};
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 
-use crate::{config::Config, facts::FsRepoFacts, glob::compile_globs};
+use crate::{config::Config, facts::FsRepoFacts};
 
 #[derive(Debug, Parser)]
 #[command(
@@ -1046,13 +1046,21 @@ fn run_check(
 }
 
 fn discover_docs(facts: &FsRepoFacts, config: &Config) -> Result<Vec<String>> {
-    let includes = compile_globs(&config.include)?;
-    let excludes = compile_globs(&config.exclude)?;
     Ok(facts
         .files()
         .iter()
-        .filter(|path| includes.iter().any(|pattern| pattern.is_match(path)))
-        .filter(|path| !excludes.iter().any(|pattern| pattern.is_match(path)))
+        .filter(|path| {
+            config
+                .include
+                .iter()
+                .any(|pattern| glob_match(pattern, path))
+        })
+        .filter(|path| {
+            !config
+                .exclude
+                .iter()
+                .any(|pattern| glob_match(pattern, path))
+        })
         .cloned()
         .collect())
 }

@@ -295,7 +295,7 @@ mod tests {
         fn glob_paths(&self, _doc: &str, _base: Base, pattern: &str) -> Vec<String> {
             self.paths
                 .iter()
-                .filter(|path| crate::resolve::wildcard_match(pattern, path))
+                .filter(|path| crate::glob_match(pattern, path))
                 .cloned()
                 .collect()
         }
