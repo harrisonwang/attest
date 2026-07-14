@@ -41,6 +41,9 @@ class DistributionTests(unittest.TestCase):
         self.assertIn("python3 tools/validate_release.py --tag", workflow)
         self.assertIn("package-manager-cache: false", workflow)
         self.assertIn("dtolnay/rust-toolchain@stable", workflow)
+        self.assertIn('npm view "${package}@${version}" version', workflow)
+        self.assertNotIn("NODE_AUTH_TOKEN", workflow)
+        self.assertNotIn("secrets.NPM_TOKEN", workflow)
         self.assertNotIn("npm version", workflow)
 
     def test_package_and_workspace_versions_match(self) -> None:
