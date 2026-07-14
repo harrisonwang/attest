@@ -69,6 +69,9 @@ mod tests {
         ));
         assert!(glob_match("docs/**", "docs/design/notes.md"));
         assert!(!glob_match("docs/**/*.md", "src/main.rs"));
+        // 有意的选择：`**` 允许匹配零层，所以 `docs/**` 也命中 `docs` 本身，
+        // 和 .gitignore 的直觉一致（旧正则实现不命中，这里明确改掉）。
+        assert!(glob_match("docs/**", "docs"));
     }
 
     #[test]
