@@ -1,0 +1,8 @@
+{
+  "darwin-arm64": "attest-macos-aarch64.tar.gz",
+  "darwin-x64": "attest-macos-x86_64.tar.gz",
+  "linux-arm64": "attest-linux-aarch64.tar.gz",
+  "linux-x64": "attest-linux-x86_64.tar.gz",
+  "win32-arm64": "attest-windows-aarch64.zip",
+  "win32-x64": "attest-windows-x86_64.zip"
+}

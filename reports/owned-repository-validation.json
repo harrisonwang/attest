@@ -1,0 +1,22 @@
+{
+  "schema": "attest.owned-validation.v1",
+  "generated_at": "2026-07-14T02:57:08.550993+00:00",
+  "scope": "immediate Git repositories; repository identities intentionally omitted",
+  "binary": {
+    "version": "attest 0.1.0",
+    "sha256": "47e94471854e6948a462d9ba9155cefdedd514a421d416d8df5b8902232c85b5"
+  },
+  "stats": {
+    "repositories": 30,
+    "successful": 30,
+    "failed": 0,
+    "clean": 27,
+    "with_broken": 3,
+    "docs": 16,
+    "tokens": 623,
+    "verified": 352,
+    "broken": 9,
+    "suspect": 43,
+    "silent": 219
+  }
+}

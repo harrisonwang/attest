@@ -1,0 +1,261 @@
+{
+  "schema": "attest.scan.v1",
+  "profile": "agent",
+  "generated_at": "2026-07-14T02:18:43.060870+00:00",
+  "stats": {
+    "repositories": 5,
+    "successful": 5,
+    "failed": 0,
+    "with_broken": 1,
+    "docs": 24,
+    "tokens": 920,
+    "verified": 622,
+    "broken": 9,
+    "suspect": 35,
+    "silent": 254
+  },
+  "repositories": [
+    {
+      "repository": "nextdns/nextdns",
+      "stars": 4096,
+      "commit": "cd213c985a44dc83bfd53a2d83d4b59f3cfeff5a",
+      "exit_code": 0,
+      "docs": 1,
+      "tokens": 17,
+      "verified": 12,
+      "broken": 0,
+      "suspect": 0,
+      "silent": 5,
+      "findings": [],
+      "error": null
+    },
+    {
+      "repository": "sei-protocol/sei-chain",
+      "stars": 2844,
+      "commit": "959d1275600b073368d9faa869060ce105f49759",
+      "exit_code": 0,
+      "docs": 7,
+      "tokens": 253,
+      "verified": 180,
+      "broken": 0,
+      "suspect": 9,
+      "silent": 64,
+      "findings": [],
+      "error": null
+    },
+    {
+      "repository": "gap-system/gap",
+      "stars": 987,
+      "commit": "afe80eeb2aaf431da78554b8669c46b205e621a0",
+      "exit_code": 0,
+      "docs": 1,
+      "tokens": 51,
+      "verified": 30,
+      "broken": 0,
+      "suspect": 10,
+      "silent": 11,
+      "findings": [],
+      "error": null
+    },
+    {
+      "repository": "woocommerce/woocommerce-gateway-stripe",
+      "stars": 288,
+      "commit": "87a684d18333cdc407c404d2de0c0b174d8bbab1",
+      "exit_code": 1,
+      "docs": 14,
+      "tokens": 429,
+      "verified": 283,
+      "broken": 9,
+      "suspect": 7,
+      "silent": 130,
+      "findings": [
+        {
+          "id": "f371",
+          "verdict": "broken",
+          "token": "tests/phpunit/Admin/",
+          "doc": "includes/AGENTS.md",
+          "line": 77,
+          "column_start": 27,
+          "column_end": 47,
+          "context": "## Test Mapping\n\n- General backend tests: `tests/phpunit/`\n- Admin controller tests: `tests/phpunit/Admin/`",
+          "ns": "path",
+          "evidence": {
+            "searched": [
+              "doc-dir",
+              "project-root",
+              "repo-root"
+            ]
+          },
+          "baseline": false
+        },
+        {
+          "id": "f372",
+          "verdict": "broken",
+          "token": "tests/phpunit/PaymentMethods/",
+          "doc": "includes/AGENTS.md",
+          "line": 78,
+          "column_start": 25,
+          "column_end": 54,
+          "context": "## Test Mapping\n\n- General backend tests: `tests/phpunit/`\n- Admin controller tests: `tests/phpunit/Admin/`\n- Payment method tests: `tests/phpunit/PaymentMethods/`",
+          "ns": "path",
+          "evidence": {
+            "searched": [
+              "doc-dir",
+              "project-root",
+              "repo-root"
+            ]
+          },
+          "baseline": false
+        },
+        {
+          "id": "f373",
+          "verdict": "broken",
+          "token": "tests/phpunit/PaymentTokens/",
+          "doc": "includes/AGENTS.md",
+          "line": 79,
+          "column_start": 24,
+          "column_end": 52,
+          "context": "## Test Mapping\n\n- General backend tests: `tests/phpunit/`\n- Admin controller tests: `tests/phpunit/Admin/`\n- Payment method tests: `tests/phpunit/PaymentMethods/`\n- Payment token tests: `tests/phpunit/PaymentTokens/`",
+          "ns": "path",
+          "evidence": {
+            "searched": [
+              "doc-dir",
+              "project-root",
+              "repo-root"
+            ]
+          },
+          "baseline": false
+        },
+        {
+          "id": "f395",
+          "verdict": "broken",
+          "token": "tests/phpunit/WC_Stripe_Agentic_Commerce_Csv_Feed_Test.php",
+          "doc": "includes/agentic-commerce/AGENTS.md",
+          "line": 51,
+          "column_start": 3,
+          "column_end": 61,
+          "context": "## Test Mapping\n\nPrimary coverage is in:\n- `tests/phpunit/WC_Stripe_Agentic_Commerce_Csv_Feed_Test.php`",
+          "ns": "path",
+          "evidence": {
+            "searched": [
+              "doc-dir",
+              "project-root",
+              "repo-root"
+            ]
+          },
+          "baseline": false
+        },
+        {
+          "id": "f396",
+          "verdict": "broken",
+          "token": "tests/phpunit/WC_Stripe_Agentic_Commerce_Feed_Schema_Test.php",
+          "doc": "includes/agentic-commerce/AGENTS.md",
+          "line": 52,
+          "column_start": 3,
+          "column_end": 64,
+          "context": "## Test Mapping\n\nPrimary coverage is in:\n- `tests/phpunit/WC_Stripe_Agentic_Commerce_Csv_Feed_Test.php`\n- `tests/phpunit/WC_Stripe_Agentic_Commerce_Feed_Schema_Test.php`",
+          "ns": "path",
+          "evidence": {
+            "searched": [
+              "doc-dir",
+              "project-root",
+              "repo-root"
+            ]
+          },
+          "baseline": false
+        },
+        {
+          "id": "f397",
+          "verdict": "broken",
+          "token": "tests/phpunit/WC_Stripe_Agentic_Commerce_Feed_Validator_Test.php",
+          "doc": "includes/agentic-commerce/AGENTS.md",
+          "line": 53,
+          "column_start": 3,
+          "column_end": 67,
+          "context": "## Test Mapping\n\nPrimary coverage is in:\n- `tests/phpunit/WC_Stripe_Agentic_Commerce_Csv_Feed_Test.php`\n- `tests/phpunit/WC_Stripe_Agentic_Commerce_Feed_Schema_Test.php`\n- `tests/phpunit/WC_Stripe_Agentic_Commerce_Feed_Validator_Test.php`",
+          "ns": "path",
+          "evidence": {
+            "searched": [
+              "doc-dir",
+              "project-root",
+              "repo-root"
+            ]
+          },
+          "baseline": false
+        },
+        {
+          "id": "f398",
+          "verdict": "broken",
+          "token": "tests/phpunit/WC_Stripe_Agentic_Commerce_Files_Api_Delivery_Test.php",
+          "doc": "includes/agentic-commerce/AGENTS.md",
+          "line": 54,
+          "column_start": 3,
+          "column_end": 71,
+          "context": "## Test Mapping\n\nPrimary coverage is in:\n- `tests/phpunit/WC_Stripe_Agentic_Commerce_Csv_Feed_Test.php`\n- `tests/phpunit/WC_Stripe_Agentic_Commerce_Feed_Schema_Test.php`\n- `tests/phpunit/WC_Stripe_Agentic_Commerce_Feed_Validator_Test.php`\n- `tests/phpunit/WC_Stripe_Agentic_Commerce_Files_Api_Delivery_Test.php`",
+          "ns": "path",
+          "evidence": {
+            "searched": [
+              "doc-dir",
+              "project-root",
+              "repo-root"
+            ]
+          },
+          "baseline": false
+        },
+        {
+          "id": "f399",
+          "verdict": "broken",
+          "token": "tests/phpunit/WC_Stripe_Agentic_Commerce_Integration_Test.php",
+          "doc": "includes/agentic-commerce/AGENTS.md",
+          "line": 55,
+          "column_start": 3,
+          "column_end": 64,
+          "context": "## Test Mapping\n\nPrimary coverage is in:\n- `tests/phpunit/WC_Stripe_Agentic_Commerce_Csv_Feed_Test.php`\n- `tests/phpunit/WC_Stripe_Agentic_Commerce_Feed_Schema_Test.php`\n- `tests/phpunit/WC_Stripe_Agentic_Commerce_Feed_Validator_Test.php`\n- `tests/phpunit/WC_Stripe_Agentic_Commerce_Files_Api_Delivery_Test.php`\n- `tests/phpunit/WC_Stripe_Agentic_Commerce_Integration_Test.php`",
+          "ns": "path",
+          "evidence": {
+            "searched": [
+              "doc-dir",
+              "project-root",
+              "repo-root"
+            ]
+          },
+          "baseline": false
+        },
+        {
+          "id": "f400",
+          "verdict": "broken",
+          "token": "tests/phpunit/WC_Stripe_Agentic_Commerce_Product_Mapper_Test.php",
+          "doc": "includes/agentic-commerce/AGENTS.md",
+          "line": 56,
+          "column_start": 3,
+          "column_end": 67,
+          "context": "## Test Mapping\n\nPrimary coverage is in:\n- `tests/phpunit/WC_Stripe_Agentic_Commerce_Csv_Feed_Test.php`\n- `tests/phpunit/WC_Stripe_Agentic_Commerce_Feed_Schema_Test.php`\n- `tests/phpunit/WC_Stripe_Agentic_Commerce_Feed_Validator_Test.php`\n- `tests/phpunit/WC_Stripe_Agentic_Commerce_Files_Api_Delivery_Test.php`\n- `tests/phpunit/WC_Stripe_Agentic_Commerce_Integration_Test.php`\n- `tests/phpunit/WC_Stripe_Agentic_Commerce_Product_Mapper_Test.php`",
+          "ns": "path",
+          "evidence": {
+            "searched": [
+              "doc-dir",
+              "project-root",
+              "repo-root"
+            ]
+          },
+          "baseline": false
+        }
+      ],
+      "error": null
+    },
+    {
+      "repository": "1Password/SCAM",
+      "stars": 133,
+      "commit": "ce2761e8530142521360e23cce66a9e24cd1b3e5",
+      "exit_code": 0,
+      "docs": 1,
+      "tokens": 170,
+      "verified": 117,
+      "broken": 0,
+      "suspect": 9,
+      "silent": 44,
+      "findings": [],
+      "error": null
+    }
+  ]
+}

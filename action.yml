@@ -1,0 +1,20 @@
+name: Attest documentation
+description: Fail when repository documentation contains newly broken bindings
+inputs:
+  version:
+    description: Published @harrisonwang/attest version
+    required: false
+    default: latest
+  args:
+    description: Arguments passed to attest
+    required: false
+    default: check --format github
+runs:
+  using: composite
+  steps:
+    - name: Run attest
+      shell: bash
+      env:
+        ATTEST_VERSION: ${{ inputs.version }}
+        ATTEST_ARGS: ${{ inputs.args }}
+      run: npx --yes "@harrisonwang/attest@${ATTEST_VERSION}" ${ATTEST_ARGS}

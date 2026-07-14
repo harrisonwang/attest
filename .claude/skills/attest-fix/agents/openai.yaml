@@ -1,0 +1,4 @@
+interface:
+  display_name: "Fix Attest Findings"
+  short_description: "Repair stale docs until attest passes"
+  default_prompt: "Use $attest-fix to repair all confirmed documentation drift."

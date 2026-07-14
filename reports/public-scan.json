@@ -1,0 +1,1095 @@
+{
+  "schema": "attest.scan.v1",
+  "profile": "agent",
+  "generated_at": "2026-07-14T02:27:35.708946+00:00",
+  "stats": {
+    "repositories": 50,
+    "successful": 50,
+    "failed": 0,
+    "with_broken": 9,
+    "docs": 330,
+    "tokens": 16310,
+    "verified": 8201,
+    "broken": 19,
+    "suspect": 1211,
+    "silent": 6879
+  },
+  "repositories": [
+    {
+      "repository": "obra/superpowers",
+      "stars": 252711,
+      "commit": "d884ae04edebef577e82ff7c4e143debd0bbec99",
+      "exit_code": 0,
+      "docs": 2,
+      "tokens": 32,
+      "verified": 26,
+      "broken": 0,
+      "suspect": 4,
+      "silent": 2,
+      "findings": [],
+      "error": null
+    },
+    {
+      "repository": "facebook/react",
+      "stars": 246446,
+      "commit": "c0c39a6b3907eaab35f43074949e2957a2a734c1",
+      "exit_code": 1,
+      "docs": 26,
+      "tokens": 586,
+      "verified": 277,
+      "broken": 2,
+      "suspect": 105,
+      "silent": 202,
+      "findings": [
+        {
+          "id": "f372",
+          "verdict": "broken",
+          "token": "hir.rs",
+          "doc": "compiler/.claude/skills/compiler-port/SKILL.md",
+          "line": 49,
+          "column_start": 96,
+          "column_end": 102,
+          "context": "## Step 2: Gather context\n\nRead the following files (all reads happen in main context):\n\n1. **Architecture guide**: `compiler/docs/rust-port/rust-port-architecture.md`\n2. **Pass documentation**: Check `compiler/packages/babel-plugin-react-compiler/docs/passes/` for docs about this pass\n3. **TypeScript source**: All TypeScript source files for the pass + any helpers imported from the same folder\n4. **Rust pipeline**: `compiler/crates/react_compiler/src/entrypoint/pipeline.rs`\n5. **Rust HIR types**: Key type files in `compiler/crates/react_compiler_hir/src/` (especially `hir.rs`, `environment.rs`)",
+          "ns": "path",
+          "evidence": {
+            "searched": [
+              "doc-dir",
+              "project-root",
+              "repo-root"
+            ]
+          },
+          "baseline": false
+        },
+        {
+          "id": "f374",
+          "verdict": "broken",
+          "token": "compiler/crates/react_compiler_hir/src/reactive_function.rs",
+          "doc": "compiler/.claude/skills/compiler-port/SKILL.md",
+          "line": 50,
+          "column_start": 60,
+          "column_end": 119,
+          "context": "## Step 2: Gather context\n\nRead the following files (all reads happen in main context):\n\n1. **Architecture guide**: `compiler/docs/rust-port/rust-port-architecture.md`\n2. **Pass documentation**: Check `compiler/packages/babel-plugin-react-compiler/docs/passes/` for docs about this pass\n3. **TypeScript source**: All TypeScript source files for the pass + any helpers imported from the same folder\n4. **Rust pipeline**: `compiler/crates/react_compiler/src/entrypoint/pipeline.rs`\n5. **Rust HIR types**: Key type files in `compiler/crates/react_compiler_hir/src/` (especially `hir.rs`, `environment.rs`)\n6. **Rust reactive types**: For reactive passes, also read `compiler/crates/react_compiler_hir/src/reactive_function.rs`",
+          "ns": "path",
+          "evidence": {
+            "searched": [
+              "doc-dir",
+              "project-root",
+              "repo-root"
+            ]
+          },
+          "baseline": false
+        }
+      ],
+      "error": null
+    },
+    {
+      "repository": "affaan-m/everything-claude-code",
+      "stars": 228747,
+      "commit": "ed387446052dfbc6b52de149406b70efa65edc59",
+      "exit_code": 0,
+      "docs": 26,
+      "tokens": 334,
+      "verified": 155,
+      "broken": 0,
+      "suspect": 16,
+      "silent": 163,
+      "findings": [],
+      "error": null
+    },
+    {
+      "repository": "anomalyco/opencode",
+      "stars": 184926,
+      "commit": "7255ce9a575315e3c5917cb341efc2c6b4a5a6b8",
+      "exit_code": 0,
+      "docs": 15,
+      "tokens": 715,
+      "verified": 308,
+      "broken": 0,
+      "suspect": 21,
+      "silent": 386,
+      "findings": [],
+      "error": null
+    },
+    {
+      "repository": "vercel/next.js",
+      "stars": 141019,
+      "commit": "1ecd8f1b63a29ccda8c4febb51e1dfa148a9c1dc",
+      "exit_code": 0,
+      "docs": 5,
+      "tokens": 549,
+      "verified": 322,
+      "broken": 0,
+      "suspect": 69,
+      "silent": 158,
+      "findings": [],
+      "error": null
+    },
+    {
+      "repository": "anthropics/claude-code",
+      "stars": 137517,
+      "commit": "1fb278b85d4546c7c04db3b3590e031b5a8a7571",
+      "exit_code": 0,
+      "docs": 3,
+      "tokens": 52,
+      "verified": 29,
+      "broken": 0,
+      "suspect": 1,
+      "silent": 22,
+      "findings": [],
+      "error": null
+    },
+    {
+      "repository": "electron/electron",
+      "stars": 121972,
+      "commit": "c6943ee1388ba35a487c32968f5ea21f85223f01",
+      "exit_code": 0,
+      "docs": 13,
+      "tokens": 663,
+      "verified": 240,
+      "broken": 0,
+      "suspect": 20,
+      "silent": 403,
+      "findings": [],
+      "error": null
+    },
+    {
+      "repository": "denoland/deno",
+      "stars": 107785,
+      "commit": "7e571f0709275bc99842699399ee1a5c9c227ec3",
+      "exit_code": 0,
+      "docs": 7,
+      "tokens": 275,
+      "verified": 176,
+      "broken": 0,
+      "suspect": 11,
+      "silent": 88,
+      "findings": [],
+      "error": null
+    },
+    {
+      "repository": "browser-use/browser-use",
+      "stars": 104319,
+      "commit": "c9206829c1cefb049cec7335abd764da6d43a11c",
+      "exit_code": 0,
+      "docs": 2,
+      "tokens": 323,
+      "verified": 184,
+      "broken": 0,
+      "suspect": 7,
+      "silent": 132,
+      "findings": [],
+      "error": null
+    },
+    {
+      "repository": "openai/codex",
+      "stars": 97281,
+      "commit": "80c6cd3014e4236e99bd06e67f31fcb95c9ee906",
+      "exit_code": 0,
+      "docs": 2,
+      "tokens": 203,
+      "verified": 103,
+      "broken": 0,
+      "suspect": 14,
+      "silent": 86,
+      "findings": [],
+      "error": null
+    },
+    {
+      "repository": "oven-sh/bun",
+      "stars": 94622,
+      "commit": "5098c8dada2f6cb7f97ceb0358168a6d93d833d7",
+      "exit_code": 0,
+      "docs": 29,
+      "tokens": 2227,
+      "verified": 1178,
+      "broken": 0,
+      "suspect": 94,
+      "silent": 955,
+      "findings": [],
+      "error": null
+    },
+    {
+      "repository": "modelcontextprotocol/servers",
+      "stars": 88360,
+      "commit": "d31124c982401739917fd817c2a59db344529c16",
+      "exit_code": 0,
+      "docs": 2,
+      "tokens": 55,
+      "verified": 36,
+      "broken": 0,
+      "suspect": 3,
+      "silent": 16,
+      "findings": [],
+      "error": null
+    },
+    {
+      "repository": "sveltejs/svelte",
+      "stars": 87612,
+      "commit": "4da9f74cd95e838acc56c4aa0d2e926d5f68972d",
+      "exit_code": 0,
+      "docs": 1,
+      "tokens": 3,
+      "verified": 1,
+      "broken": 0,
+      "suspect": 1,
+      "silent": 1,
+      "findings": [],
+      "error": null
+    },
+    {
+      "repository": "astral-sh/uv",
+      "stars": 87359,
+      "commit": "c6b581528de0c10d21ccc001c87cb015432e5d8f",
+      "exit_code": 0,
+      "docs": 2,
+      "tokens": 21,
+      "verified": 9,
+      "broken": 0,
+      "suspect": 1,
+      "silent": 11,
+      "findings": [],
+      "error": null
+    },
+    {
+      "repository": "zed-industries/zed",
+      "stars": 86829,
+      "commit": "97110fd5a119eb5fad49524dc04d7c042193e8ab",
+      "exit_code": 0,
+      "docs": 3,
+      "tokens": 336,
+      "verified": 93,
+      "broken": 0,
+      "suspect": 15,
+      "silent": 228,
+      "findings": [],
+      "error": null
+    },
+    {
+      "repository": "OpenHands/OpenHands",
+      "stars": 80520,
+      "commit": "5f9906fbdac3b30af7afa582af8845064dd43fc6",
+      "exit_code": 1,
+      "docs": 1,
+      "tokens": 237,
+      "verified": 115,
+      "broken": 5,
+      "suspect": 26,
+      "silent": 91,
+      "findings": [
+        {
+          "id": "f82",
+          "verdict": "broken",
+          "token": "openhands/app_server/integrations/vscode",
+          "doc": "AGENTS.md",
+          "line": 163,
+          "column_start": 18,
+          "column_end": 58,
+          "context": "\nVSCode Extension:\n- Located in the `openhands/app_server/integrations/vscode` directory",
+          "ns": "path",
+          "evidence": {
+            "searched": [
+              "doc-dir",
+              "project-root",
+              "repo-root"
+            ]
+          },
+          "baseline": false
+        },
+        {
+          "id": "f87",
+          "verdict": "broken",
+          "token": "npm run compile",
+          "doc": "AGENTS.md",
+          "line": 170,
+          "column_start": 25,
+          "column_end": 40,
+          "context": "  - Type checking: `npm run typecheck`\n- Building:\n  - Compile TypeScript: `npm run compile`",
+          "ns": "script",
+          "evidence": {
+            "searched": [
+              "package.json#scripts",
+              "Makefile targets",
+              "justfile targets",
+              "cargo aliases"
+            ]
+          },
+          "baseline": false
+        },
+        {
+          "id": "f88",
+          "verdict": "broken",
+          "token": "npm run package-vsix",
+          "doc": "AGENTS.md",
+          "line": 171,
+          "column_start": 24,
+          "column_end": 44,
+          "context": "- Building:\n  - Compile TypeScript: `npm run compile`\n  - Package extension: `npm run package-vsix`",
+          "ns": "script",
+          "evidence": {
+            "searched": [
+              "package.json#scripts",
+              "Makefile targets",
+              "justfile targets",
+              "cargo aliases"
+            ]
+          },
+          "baseline": false
+        },
+        {
+          "id": "f150",
+          "verdict": "broken",
+          "token": "frontend/src/types/action-type.ts",
+          "doc": "AGENTS.md",
+          "line": 358,
+          "column_start": 26,
+          "column_end": 59,
+          "context": "#### Action Handling:\n- Actions are defined in `frontend/src/types/action-type.ts`",
+          "ns": "path",
+          "evidence": {
+            "searched": [
+              "doc-dir",
+              "project-root",
+              "repo-root"
+            ]
+          },
+          "baseline": false
+        },
+        {
+          "id": "f179",
+          "verdict": "broken",
+          "token": "frontend/src/utils/verified-models.ts",
+          "doc": "AGENTS.md",
+          "line": 419,
+          "column_start": 31,
+          "column_end": 68,
+          "context": "#### Model Configuration Procedure:\n\n1. **Frontend Model Arrays** (`frontend/src/utils/verified-models.ts`):",
+          "ns": "path",
+          "evidence": {
+            "searched": [
+              "doc-dir",
+              "project-root",
+              "repo-root"
+            ]
+          },
+          "baseline": false
+        }
+      ],
+      "error": null
+    },
+    {
+      "repository": "badlogic/pi-mono",
+      "stars": 69784,
+      "commit": "0e6909f050eeb15e8f6c05185511f3788357ddb3",
+      "exit_code": 0,
+      "docs": 1,
+      "tokens": 128,
+      "verified": 67,
+      "broken": 0,
+      "suspect": 2,
+      "silent": 59,
+      "findings": [],
+      "error": null
+    },
+    {
+      "repository": "cline/cline",
+      "stars": 64556,
+      "commit": "b4ed8a226e38e318ceb87f17d2fa689c3aa6b0bc",
+      "exit_code": 0,
+      "docs": 4,
+      "tokens": 110,
+      "verified": 73,
+      "broken": 0,
+      "suspect": 6,
+      "silent": 31,
+      "findings": [],
+      "error": null
+    },
+    {
+      "repository": "tw93/Mole",
+      "stars": 58692,
+      "commit": "7c681aef35d0dca6d1c3bdd85333ff571dc4be00",
+      "exit_code": 0,
+      "docs": 6,
+      "tokens": 689,
+      "verified": 408,
+      "broken": 0,
+      "suspect": 11,
+      "silent": 270,
+      "findings": [],
+      "error": null
+    },
+    {
+      "repository": "astral-sh/ruff",
+      "stars": 48533,
+      "commit": "1b1a83a48eb31f6d4bbb75c4fa121f0103df0fab",
+      "exit_code": 0,
+      "docs": 2,
+      "tokens": 77,
+      "verified": 45,
+      "broken": 0,
+      "suspect": 0,
+      "silent": 32,
+      "findings": [],
+      "error": null
+    },
+    {
+      "repository": "anthropics/claude-cookbooks",
+      "stars": 48102,
+      "commit": "67ce644d33e5933f0bcc0b6eb4113df41bbf3a8f",
+      "exit_code": 0,
+      "docs": 26,
+      "tokens": 308,
+      "verified": 157,
+      "broken": 0,
+      "suspect": 4,
+      "silent": 147,
+      "findings": [],
+      "error": null
+    },
+    {
+      "repository": "sickn33/antigravity-awesome-skills",
+      "stars": 42946,
+      "commit": "ef91283945a9bc260698af6001e57c6a9e24403d",
+      "exit_code": 0,
+      "docs": 33,
+      "tokens": 1497,
+      "verified": 802,
+      "broken": 0,
+      "suspect": 27,
+      "silent": 668,
+      "findings": [],
+      "error": null
+    },
+    {
+      "repository": "agno-agi/agno",
+      "stars": 41109,
+      "commit": "188133abe1c99cbc8becb1b7dac0b6c910d9ca97",
+      "exit_code": 0,
+      "docs": 5,
+      "tokens": 182,
+      "verified": 109,
+      "broken": 0,
+      "suspect": 15,
+      "silent": 58,
+      "findings": [],
+      "error": null
+    },
+    {
+      "repository": "nushell/nushell",
+      "stars": 39958,
+      "commit": "e3dcf2d9bb5dd585e3bc96ca0fdab4f90ab6eff8",
+      "exit_code": 0,
+      "docs": 2,
+      "tokens": 50,
+      "verified": 32,
+      "broken": 0,
+      "suspect": 0,
+      "silent": 18,
+      "findings": [],
+      "error": null
+    },
+    {
+      "repository": "wshobson/agents",
+      "stars": 37824,
+      "commit": "1d5175f9053033cea267a4468bf1d1fb3fd57fcc",
+      "exit_code": 0,
+      "docs": 2,
+      "tokens": 90,
+      "verified": 54,
+      "broken": 0,
+      "suspect": 8,
+      "silent": 28,
+      "findings": [],
+      "error": null
+    },
+    {
+      "repository": "continuedev/continue",
+      "stars": 34827,
+      "commit": "c5490d97eaa96cd20b570607d21f4bb4dd39fb9e",
+      "exit_code": 1,
+      "docs": 2,
+      "tokens": 54,
+      "verified": 31,
+      "broken": 1,
+      "suspect": 11,
+      "silent": 11,
+      "findings": [
+        {
+          "id": "f26",
+          "verdict": "broken",
+          "token": "src/mcp.ts",
+          "doc": "extensions/cli/AGENTS.md",
+          "line": 51,
+          "column_start": 25,
+          "column_end": 35,
+          "context": "5. **Tools System** (`src/tools/`): Built-in development tools including:\n\n   - File operations (read, write, list)\n   - Code search functionality\n   - Terminal command execution\n   - Diff viewing\n   - Exit tool (headless mode only)\n\n6. **MCP Integration** (`src/mcp.ts`): Model Context Protocol service for extended tool capabilities",
+          "ns": "path",
+          "evidence": {
+            "searched": [
+              "doc-dir",
+              "project-root",
+              "repo-root"
+            ]
+          },
+          "baseline": false
+        }
+      ],
+      "error": null
+    },
+    {
+      "repository": "vercel-labs/skills",
+      "stars": 25880,
+      "commit": "cf4a3ea678b7ea5066caa90de94bf2dfacde5538",
+      "exit_code": 1,
+      "docs": 1,
+      "tokens": 73,
+      "verified": 63,
+      "broken": 3,
+      "suspect": 3,
+      "silent": 4,
+      "findings": [
+        {
+          "id": "f64",
+          "verdict": "broken",
+          "token": "pnpm run -C scripts validate-agents.ts",
+          "doc": "AGENTS.md",
+          "line": 140,
+          "column_start": 1,
+          "column_end": 39,
+          "context": "# Validate and sync agent metadata/docs\npnpm run -C scripts validate-agents.ts",
+          "ns": "script",
+          "evidence": {
+            "searched": [
+              "package.json#scripts",
+              "Makefile targets",
+              "justfile targets",
+              "cargo aliases"
+            ]
+          },
+          "baseline": false
+        },
+        {
+          "id": "f65",
+          "verdict": "broken",
+          "token": "pnpm run -C scripts sync-agents.ts",
+          "doc": "AGENTS.md",
+          "line": 141,
+          "column_start": 1,
+          "column_end": 35,
+          "context": "# Validate and sync agent metadata/docs\npnpm run -C scripts validate-agents.ts\npnpm run -C scripts sync-agents.ts",
+          "ns": "script",
+          "evidence": {
+            "searched": [
+              "package.json#scripts",
+              "Makefile targets",
+              "justfile targets",
+              "cargo aliases"
+            ]
+          },
+          "baseline": false
+        },
+        {
+          "id": "f72",
+          "verdict": "broken",
+          "token": "pnpm run -C scripts validate-agents.ts",
+          "doc": "AGENTS.md",
+          "line": 171,
+          "column_start": 8,
+          "column_end": 46,
+          "context": "## Adding a New Agent\n\n1. Add the agent definition to `src/agents.ts`\n2. Run `pnpm run -C scripts validate-agents.ts` to validate",
+          "ns": "script",
+          "evidence": {
+            "searched": [
+              "package.json#scripts",
+              "Makefile targets",
+              "justfile targets",
+              "cargo aliases"
+            ]
+          },
+          "baseline": false
+        }
+      ],
+      "error": null
+    },
+    {
+      "repository": "biomejs/biome",
+      "stars": 25395,
+      "commit": "f4fb10e176e537e8ce2cac0c3fd4c38a77f91886",
+      "exit_code": 0,
+      "docs": 18,
+      "tokens": 956,
+      "verified": 527,
+      "broken": 0,
+      "suspect": 66,
+      "silent": 363,
+      "findings": [],
+      "error": null
+    },
+    {
+      "repository": "agentskills/agentskills",
+      "stars": 22934,
+      "commit": "38a2ff82958afee88dadf4831509e6f7e9d8ef4e",
+      "exit_code": 0,
+      "docs": 2,
+      "tokens": 13,
+      "verified": 8,
+      "broken": 0,
+      "suspect": 0,
+      "silent": 5,
+      "findings": [],
+      "error": null
+    },
+    {
+      "repository": "alirezarezvani/claude-skills",
+      "stars": 22267,
+      "commit": "0241f43765572f15146fcef692defbf96d473f37",
+      "exit_code": 1,
+      "docs": 31,
+      "tokens": 1334,
+      "verified": 532,
+      "broken": 1,
+      "suspect": 259,
+      "silent": 542,
+      "findings": [
+        {
+          "id": "f27",
+          "verdict": "broken",
+          "token": ".github/pull_request_template.md",
+          "doc": ".claude/commands/README.md",
+          "line": 305,
+          "column_start": 20,
+          "column_end": 52,
+          "context": "## 🔗 Related Documentation\n\n- **Automation Setup**: `.github/AUTOMATION_SETUP.md`\n- **PR Template**: `.github/pull_request_template.md`",
+          "ns": "path",
+          "evidence": {
+            "searched": [
+              "doc-dir",
+              "project-root",
+              "repo-root"
+            ]
+          },
+          "baseline": false
+        }
+      ],
+      "error": null
+    },
+    {
+      "repository": "simonw/llm",
+      "stars": 12173,
+      "commit": "0392226e6630746ef51ffd309c2bee6a5f72b58e",
+      "exit_code": 0,
+      "docs": 1,
+      "tokens": 4,
+      "verified": 1,
+      "broken": 0,
+      "suspect": 0,
+      "silent": 3,
+      "findings": [],
+      "error": null
+    },
+    {
+      "repository": "huggingface/skills",
+      "stars": 10797,
+      "commit": "52d324945107f68d06d561743cf26194bdbf9cf8",
+      "exit_code": 0,
+      "docs": 1,
+      "tokens": 56,
+      "verified": 2,
+      "broken": 0,
+      "suspect": 1,
+      "silent": 53,
+      "findings": [],
+      "error": null
+    },
+    {
+      "repository": "numman-ali/openskills",
+      "stars": 10588,
+      "commit": "57d933a4f0d5c8659bd8b285f50fb9554360f0b3",
+      "exit_code": 0,
+      "docs": 2,
+      "tokens": 0,
+      "verified": 0,
+      "broken": 0,
+      "suspect": 0,
+      "silent": 0,
+      "findings": [],
+      "error": null
+    },
+    {
+      "repository": "alibaba/open-code-review",
+      "stars": 10431,
+      "commit": "50e5a17293878cda34a811914273cbb7a31b0261",
+      "exit_code": 0,
+      "docs": 3,
+      "tokens": 18,
+      "verified": 6,
+      "broken": 0,
+      "suspect": 0,
+      "silent": 12,
+      "findings": [],
+      "error": null
+    },
+    {
+      "repository": "OpenCoworkAI/open-codesign",
+      "stars": 7255,
+      "commit": "b94d7156bf4aeb2c79892c91dc9934911a4e3741",
+      "exit_code": 0,
+      "docs": 2,
+      "tokens": 179,
+      "verified": 108,
+      "broken": 0,
+      "suspect": 25,
+      "silent": 46,
+      "findings": [],
+      "error": null
+    },
+    {
+      "repository": "open-pencil/open-pencil",
+      "stars": 6831,
+      "commit": "12031b76c9e0416a1c0d505a0af65780c011346e",
+      "exit_code": 0,
+      "docs": 1,
+      "tokens": 520,
+      "verified": 314,
+      "broken": 0,
+      "suspect": 38,
+      "silent": 168,
+      "findings": [],
+      "error": null
+    },
+    {
+      "repository": "trailofbits/skills",
+      "stars": 6077,
+      "commit": "cfe5d7b1619e47fb5b38b7e2561dad7e5f1e89af",
+      "exit_code": 0,
+      "docs": 2,
+      "tokens": 64,
+      "verified": 24,
+      "broken": 0,
+      "suspect": 18,
+      "silent": 22,
+      "findings": [],
+      "error": null
+    },
+    {
+      "repository": "deanpeters/Product-Manager-Skills",
+      "stars": 5703,
+      "commit": "99be43c842d3b83cde87863ba4a63ade4c9cd84b",
+      "exit_code": 1,
+      "docs": 2,
+      "tokens": 192,
+      "verified": 120,
+      "broken": 2,
+      "suspect": 28,
+      "silent": 42,
+      "findings": [
+        {
+          "id": "f62",
+          "verdict": "broken",
+          "token": "research/product_porch_transcript.making-the-shift-from-pm-to-director-of-product.md",
+          "doc": "CLAUDE.md",
+          "line": 31,
+          "column_start": 27,
+          "column_end": 111,
+          "context": "**Phase 8: Career & Leadership Skills (COMPLETE)** ✅\n- ✅ **4 Skills Released (Feb 27, 2026)** — distilled from two episodes of [The Product Porch](https://the-product-porch-43ca35c0.simplecast.com) podcast\n  - [`altitude-horizon-framework`](skills/altitude-horizon-framework/SKILL.md) (Component) — PM→Director mental model: altitude/horizon axes, waiter-to-operator shift, four transition zones, Cascading Context Map. Based on [E42](https://the-product-porch-43ca35c0.simplecast.com/episodes/from-product-manager-to-director-how-to-make-the-shift-part-1)\n  - [`director-readiness-advisor`](skills/director-readiness-advisor/SKILL.md) (Interactive) — Coaching across four situations: preparing, interviewing, newly landed, recalibrating. Based on E42\n  - [`executive-onboarding-playbook`](skills/executive-onboarding-playbook/SKILL.md) (Workflow) — 30-60-90 day diagnostic playbook for VP/CPO transitions. Based on [E43](https://the-product-porch-43ca35c0.simplecast.com/episodes/becoming-a-vp-cpo-leading-product-at-the-executive-level-part-2)\n  - [`vp-cpo-readiness-advisor`](skills/vp-cpo-readiness-advisor/SKILL.md) (Interactive) — Director→VP/CPO coaching; includes CEO interview framework. Based on E43\n- **Source transcripts:** `research/product_porch_transcript.making-the-shift-from-pm-to-director-of-product.md` and `research/product_porch_transcript.becoming-a-vp-or-cpo-of-product-at-executive-level.md`",
+          "ns": "path",
+          "evidence": {
+            "searched": [
+              "doc-dir",
+              "project-root",
+              "repo-root"
+            ]
+          },
+          "baseline": false
+        },
+        {
+          "id": "f63",
+          "verdict": "broken",
+          "token": "research/product_porch_transcript.becoming-a-vp-or-cpo-of-product-at-executive-level.md",
+          "doc": "CLAUDE.md",
+          "line": 31,
+          "column_start": 118,
+          "column_end": 205,
+          "context": "**Phase 8: Career & Leadership Skills (COMPLETE)** ✅\n- ✅ **4 Skills Released (Feb 27, 2026)** — distilled from two episodes of [The Product Porch](https://the-product-porch-43ca35c0.simplecast.com) podcast\n  - [`altitude-horizon-framework`](skills/altitude-horizon-framework/SKILL.md) (Component) — PM→Director mental model: altitude/horizon axes, waiter-to-operator shift, four transition zones, Cascading Context Map. Based on [E42](https://the-product-porch-43ca35c0.simplecast.com/episodes/from-product-manager-to-director-how-to-make-the-shift-part-1)\n  - [`director-readiness-advisor`](skills/director-readiness-advisor/SKILL.md) (Interactive) — Coaching across four situations: preparing, interviewing, newly landed, recalibrating. Based on E42\n  - [`executive-onboarding-playbook`](skills/executive-onboarding-playbook/SKILL.md) (Workflow) — 30-60-90 day diagnostic playbook for VP/CPO transitions. Based on [E43](https://the-product-porch-43ca35c0.simplecast.com/episodes/becoming-a-vp-cpo-leading-product-at-the-executive-level-part-2)\n  - [`vp-cpo-readiness-advisor`](skills/vp-cpo-readiness-advisor/SKILL.md) (Interactive) — Director→VP/CPO coaching; includes CEO interview framework. Based on E43\n- **Source transcripts:** `research/product_porch_transcript.making-the-shift-from-pm-to-director-of-product.md` and `research/product_porch_transcript.becoming-a-vp-or-cpo-of-product-at-executive-level.md`",
+          "ns": "path",
+          "evidence": {
+            "searched": [
+              "doc-dir",
+              "project-root",
+              "repo-root"
+            ]
+          },
+          "baseline": false
+        }
+      ],
+      "error": null
+    },
+    {
+      "repository": "openai/plugins",
+      "stars": 4480,
+      "commit": "11c74d6ba24d3a6d48f54a194cd00ef3beea18f9",
+      "exit_code": 0,
+      "docs": 3,
+      "tokens": 161,
+      "verified": 39,
+      "broken": 0,
+      "suspect": 1,
+      "silent": 121,
+      "findings": [],
+      "error": null
+    },
+    {
+      "repository": "microsoft/skills",
+      "stars": 2728,
+      "commit": "dc543aa59048cb7d0faeb91c79f3a0ab405ec952",
+      "exit_code": 0,
+      "docs": 1,
+      "tokens": 72,
+      "verified": 54,
+      "broken": 0,
+      "suspect": 1,
+      "silent": 17,
+      "findings": [],
+      "error": null
+    },
+    {
+      "repository": "jeremylongshore/claude-code-plugins-plus-skills",
+      "stars": 2505,
+      "commit": "7ca29e06dbfa73cdaf3f8448d2b6e6df740ec2b2",
+      "exit_code": 1,
+      "docs": 10,
+      "tokens": 767,
+      "verified": 327,
+      "broken": 3,
+      "suspect": 76,
+      "silent": 361,
+      "findings": [
+        {
+          "id": "f515",
+          "verdict": "broken",
+          "token": "./scripts/validate-all-plugins.sh plugins/community/jeremy-firebase/",
+          "doc": "plugins/community/jeremy-firebase/CLAUDE.md",
+          "line": 42,
+          "column_start": 1,
+          "column_end": 69,
+          "context": "# Validate changes\n./scripts/validate-all-plugins.sh plugins/community/jeremy-firebase/",
+          "ns": "path",
+          "evidence": {
+            "searched": [
+              "doc-dir",
+              "project-root",
+              "repo-root"
+            ]
+          },
+          "baseline": false
+        },
+        {
+          "id": "f675",
+          "verdict": "broken",
+          "token": "docs/MCP_TOOLS.md",
+          "doc": "plugins/community/mnemos/.claude/skills/mnemos/SKILL.md",
+          "line": 172,
+          "column_start": 3,
+          "column_end": 20,
+          "context": "## Resources\n\n- `docs/MCP_TOOLS.md` — full reference for every `mnemos_*` tool and its arguments.",
+          "ns": "path",
+          "evidence": {
+            "searched": [
+              "doc-dir",
+              "project-root",
+              "repo-root"
+            ]
+          },
+          "baseline": false
+        },
+        {
+          "id": "f677",
+          "verdict": "broken",
+          "token": "docs/ARCHITECTURE.md",
+          "doc": "plugins/community/mnemos/.claude/skills/mnemos/SKILL.md",
+          "line": 173,
+          "column_start": 3,
+          "column_end": 23,
+          "context": "## Resources\n\n- `docs/MCP_TOOLS.md` — full reference for every `mnemos_*` tool and its arguments.\n- `docs/ARCHITECTURE.md` — how prewarm, the dream pass, ranking, and provenance fit together.",
+          "ns": "path",
+          "evidence": {
+            "searched": [
+              "doc-dir",
+              "project-root",
+              "repo-root"
+            ]
+          },
+          "baseline": false
+        }
+      ],
+      "error": null
+    },
+    {
+      "repository": "NVIDIA/skills",
+      "stars": 2437,
+      "commit": "9559272b38d9e1dd9668cf746a87d1c5949c9a25",
+      "exit_code": 1,
+      "docs": 1,
+      "tokens": 3,
+      "verified": 1,
+      "broken": 1,
+      "suspect": 1,
+      "silent": 0,
+      "findings": [
+        {
+          "id": "f3",
+          "verdict": "broken",
+          "token": "make run-skill SKILL=dicom_metadata_extract    FIXTURE=skills/dicom-metadata-extract/fixtures/sample_ct.dcm    OUT=runs/dicom_metadata_demo",
+          "doc": "skills/dicom-metadata-extract/AGENTS.md",
+          "line": 15,
+          "column_start": 1,
+          "column_end": 140,
+          "context": "Run:\n\n```bash\nmake run-skill SKILL=dicom_metadata_extract \\",
+          "ns": "script",
+          "evidence": {
+            "searched": [
+              "package.json#scripts",
+              "Makefile targets",
+              "justfile targets",
+              "cargo aliases"
+            ]
+          },
+          "baseline": false
+        }
+      ],
+      "error": null
+    },
+    {
+      "repository": "supabase/agent-skills",
+      "stars": 2331,
+      "commit": "1ad9aaeb49caafd9e95c0a91116f71890eebbc53",
+      "exit_code": 0,
+      "docs": 2,
+      "tokens": 86,
+      "verified": 40,
+      "broken": 0,
+      "suspect": 12,
+      "silent": 34,
+      "findings": [],
+      "error": null
+    },
+    {
+      "repository": "expo/skills",
+      "stars": 2190,
+      "commit": "ca4f034c39f3540559c3c10f69e160ad8020b991",
+      "exit_code": 0,
+      "docs": 6,
+      "tokens": 750,
+      "verified": 380,
+      "broken": 0,
+      "suspect": 69,
+      "silent": 301,
+      "findings": [],
+      "error": null
+    },
+    {
+      "repository": "daymade/claude-code-skills",
+      "stars": 1261,
+      "commit": "ab6ae4578489080b477889356240fb7bce3b3a2f",
+      "exit_code": 0,
+      "docs": 3,
+      "tokens": 266,
+      "verified": 163,
+      "broken": 0,
+      "suspect": 24,
+      "silent": 79,
+      "findings": [],
+      "error": null
+    },
+    {
+      "repository": "open-ma/open-managed-agents",
+      "stars": 200,
+      "commit": "bd1df1f506307d5d88c53534eca735608533a2d9",
+      "exit_code": 0,
+      "docs": 1,
+      "tokens": 162,
+      "verified": 76,
+      "broken": 0,
+      "suspect": 6,
+      "silent": 80,
+      "findings": [],
+      "error": null
+    },
+    {
+      "repository": "secondsky/claude-skills",
+      "stars": 187,
+      "commit": "5e92b7170451adf347b8719ee984e147f3eabbea",
+      "exit_code": 0,
+      "docs": 7,
+      "tokens": 499,
+      "verified": 223,
+      "broken": 0,
+      "suspect": 26,
+      "silent": 250,
+      "findings": [],
+      "error": null
+    },
+    {
+      "repository": "randroids-dojo/skills",
+      "stars": 38,
+      "commit": "bf31d0e6033b5c37472cacd1e6e388cd74c5f1b4",
+      "exit_code": 0,
+      "docs": 6,
+      "tokens": 156,
+      "verified": 43,
+      "broken": 0,
+      "suspect": 59,
+      "silent": 54,
+      "findings": [],
+      "error": null
+    },
+    {
+      "repository": "polos-dev/polos",
+      "stars": 35,
+      "commit": "61a11b8130b35b48a020c863c8864ca8e3ddcad9",
+      "exit_code": 0,
+      "docs": 1,
+      "tokens": 90,
+      "verified": 66,
+      "broken": 0,
+      "suspect": 3,
+      "silent": 21,
+      "findings": [],
+      "error": null
+    },
+    {
+      "repository": "OpenHands/docs",
+      "stars": 8,
+      "commit": "a7d418214914617674139b741d9d22691390457d",
+      "exit_code": 1,
+      "docs": 1,
+      "tokens": 93,
+      "verified": 54,
+      "broken": 1,
+      "suspect": 3,
+      "silent": 35,
+      "findings": [
+        {
+          "id": "f7",
+          "verdict": "broken",
+          "token": "openapi/openapi.json",
+          "doc": "AGENTS.md",
+          "line": 20,
+          "column_start": 5,
+          "column_end": 25,
+          "context": "### Key files/directories\n\n- `docs.json` — Mintlify site configuration (nav tabs, redirects, OpenAPI integration)\n- `overview/` — high-level docs (intro, quickstart, community, skills overview)\n- `openhands/usage/` — product docs for Web/Cloud/CLI/etc.\n- `sdk/` — Agent SDK docs (guides, architecture, API reference pages)\n- `openapi/` — OpenAPI specs consumed by Mintlify\n  - `openapi/openapi.json` — OpenHands REST API schema",
+          "ns": "path",
+          "evidence": {
+            "searched": [
+              "doc-dir",
+              "project-root",
+              "repo-root"
+            ]
+          },
+          "baseline": false
+        }
+      ],
+      "error": null
+    }
+  ]
+}

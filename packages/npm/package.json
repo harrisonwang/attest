@@ -1,0 +1,27 @@
+{
+  "name": "@harrisonwang/attest",
+  "version": "0.1.0",
+  "description": "Document regression testing for repository facts",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/harrisonwang/attest.git"
+  },
+  "bin": {
+    "attest": "bin/attest.js"
+  },
+  "files": [
+    "bin",
+    "install.js",
+    "platforms.json"
+  ],
+  "scripts": {
+    "postinstall": "node install.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy,rustfmt
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo fmt --all -- --check
+      - run: cargo clippy --workspace --all-targets -- -D warnings
+      - run: cargo test --workspace
+      - run: cargo run -p attest-cli -- check
+      - run: ATTEST_BINARY=target/debug/attest bash demo/attest-fix/run.sh >/dev/null
+      - run: python3 demo/attest-fix/record.py --binary target/debug/attest --cast /tmp/attest-fix.cast --no-video
+      - run: python3 tools/validate_release.py
+      - name: Test npm wrapper and SessionStart hook
+        env:
+          ATTEST_BINARY: ${{ github.workspace }}/target/debug/attest
+        run: |
+          node packages/npm/install.js
+          node packages/npm/bin/attest.js --version
+          bash .claude/skills/attest/scripts/session-start.sh >/dev/null
+      - run: node packages/npm/test.js
+      - run: python3 -m unittest discover -s tools -p 'test_*.py'
+      - run: npm pack --dry-run
+        working-directory: packages/npm

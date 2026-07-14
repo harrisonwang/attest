@@ -1,0 +1,38 @@
+class {{CLASS_NAME}} < Formula
+  desc "Document regression testing for repository facts"
+  homepage "https://github.com/{{REPO}}"
+  version "{{VERSION}}"
+  license "MIT"
+
+  on_macos do
+    on_arm do
+      url "{{BASE_URL}}/attest-macos-aarch64.tar.gz"
+      sha256 "{{SHA256:attest-macos-aarch64.tar.gz}}"
+    end
+
+    on_intel do
+      url "{{BASE_URL}}/attest-macos-x86_64.tar.gz"
+      sha256 "{{SHA256:attest-macos-x86_64.tar.gz}}"
+    end
+  end
+
+  on_linux do
+    on_arm do
+      url "{{BASE_URL}}/attest-linux-aarch64.tar.gz"
+      sha256 "{{SHA256:attest-linux-aarch64.tar.gz}}"
+    end
+
+    on_intel do
+      url "{{BASE_URL}}/attest-linux-x86_64.tar.gz"
+      sha256 "{{SHA256:attest-linux-x86_64.tar.gz}}"
+    end
+  end
+
+  def install
+    bin.install "attest"
+  end
+
+  test do
+    assert_match "attest", shell_output("#{bin}/attest --version")
+  end
+end

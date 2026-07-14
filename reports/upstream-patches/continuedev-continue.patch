@@ -1,0 +1,13 @@
+diff --git a/extensions/cli/AGENTS.md b/extensions/cli/AGENTS.md
+index a64377e..7ba7aac 100644
+--- a/extensions/cli/AGENTS.md
++++ b/extensions/cli/AGENTS.md
+@@ -48,7 +48,7 @@ This is a CLI tool for Continue Dev that provides an interactive AI-assisted dev
+    - Diff viewing
+    - Exit tool (headless mode only)
+ 
+-6. **MCP Integration** (`src/mcp.ts`): Model Context Protocol service for extended tool capabilities
++6. **MCP Integration** (`src/services/MCPService.ts`): Model Context Protocol service, with transport and authentication helpers in `src/services/mcpTransports.ts` and `src/services/mcpUtils.ts`
+ 
+ 7. **Hooks System** (`src/hooks/`): Event interception system for extending CLI behavior
+    - `HookService.ts`: Service container integration, loads config and fires events

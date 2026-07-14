@@ -1,0 +1,10 @@
+[docs]
+include = ["README.md", "docs/**/*.md", ".claude/**/*.md"]
+exclude = ["**/node_modules/**", "**/target/**"]
+
+[policy]
+fail-on = "broken"
+context-guard = true
+
+[scope]
+"docs/**" = "repo-root"

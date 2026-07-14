@@ -1,0 +1,13 @@
+{
+  "git": {"subcommands": ["add", "bisect", "branch", "checkout", "cherry-pick", "clone", "commit", "diff", "fetch", "init", "log", "merge", "pull", "push", "rebase", "reset", "restore", "revert", "show", "status", "switch", "tag"]},
+  "cargo": {"subcommands": ["add", "bench", "build", "check", "clean", "clippy", "doc", "fetch", "fix", "fmt", "init", "install", "metadata", "new", "publish", "remove", "run", "search", "test", "tree", "update", "vendor"]},
+  "pnpm": {"subcommands": ["add", "build", "deploy", "exec", "fetch", "import", "init", "install", "link", "list", "outdated", "publish", "remove", "run", "test", "update"]},
+  "npm": {"subcommands": ["audit", "ci", "exec", "init", "install", "link", "outdated", "pack", "publish", "remove", "run", "test", "uninstall", "update", "version"], "renamed": {"add": "install"}},
+  "yarn": {"subcommands": ["add", "build", "cache", "config", "create", "dlx", "exec", "info", "init", "install", "link", "npm", "pack", "remove", "run", "set", "test", "up", "why", "workspace", "workspaces"]},
+  "uv": {"subcommands": ["add", "build", "cache", "export", "init", "lock", "pip", "publish", "remove", "run", "sync", "tool", "tree", "venv"]},
+  "go": {"subcommands": ["build", "clean", "doc", "env", "fmt", "generate", "get", "install", "list", "mod", "run", "test", "tool", "version", "vet", "work"]},
+  "make": {"subcommands": []},
+  "docker": {"subcommands": ["build", "compose", "container", "cp", "create", "exec", "image", "images", "info", "inspect", "kill", "login", "logs", "network", "ps", "pull", "push", "restart", "rm", "rmi", "run", "start", "stop", "system", "tag", "volume"], "renamed": {"compose-cli": "compose"}},
+  "gh": {"subcommands": ["api", "auth", "browse", "codespace", "gist", "issue", "pr", "release", "repo", "run", "search", "secret", "variable", "workflow"]},
+  "wrangler": {"subcommands": ["build", "check", "d1", "delete", "deploy", "dev", "init", "kv", "login", "logout", "pages", "publish", "queues", "r2", "secret", "tail", "types", "versions", "whoami"]}
+}

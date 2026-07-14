@@ -1,0 +1,4 @@
+interface:
+  display_name: "Attest Docs"
+  short_description: "Check repository docs against code facts"
+  default_prompt: "Use $attest to check this repository for stale documentation."

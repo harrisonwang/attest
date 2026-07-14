@@ -1,0 +1,179 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+jobs:
+  release-config:
+    runs-on: ubuntu-latest
+    env:
+      HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+      SCOOP_BUCKET_TOKEN: ${{ secrets.SCOOP_BUCKET_TOKEN }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: Validate version metadata
+        env:
+          TAG: ${{ github.ref_name }}
+        run: python3 tools/validate_release.py --tag "$TAG"
+      - name: Validate release secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          for name in HOMEBREW_TAP_TOKEN SCOOP_BUCKET_TOKEN; do
+            if [[ -z "${!name:-}" ]]; then
+              echo "$name is not configured" >&2
+              exit 1
+            fi
+          done
+
+  build:
+    needs: release-config
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-latest
+            artifact: attest-linux-x86_64.tar.gz
+          - runner: ubuntu-24.04-arm
+            artifact: attest-linux-aarch64.tar.gz
+          - runner: macos-15-intel
+            artifact: attest-macos-x86_64.tar.gz
+          - runner: macos-latest
+            artifact: attest-macos-aarch64.tar.gz
+          - runner: windows-latest
+            artifact: attest-windows-x86_64.zip
+          - runner: windows-11-arm
+            artifact: attest-windows-aarch64.zip
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo build --release --locked -p attest-cli
+      - name: Package Unix binary
+        if: runner.os != 'Windows'
+        shell: bash
+        env:
+          ARTIFACT: ${{ matrix.artifact }}
+        run: |
+          mkdir -p dist/staging
+          cp target/release/attest dist/staging/attest
+          tar -C dist/staging -czf "dist/${ARTIFACT}" attest
+          shasum -a 256 "dist/${ARTIFACT}" > "dist/${ARTIFACT}.sha256"
+          rm -rf dist/staging
+      - name: Package Windows binary
+        if: runner.os == 'Windows'
+        shell: pwsh
+        env:
+          ARTIFACT: ${{ matrix.artifact }}
+        run: |
+          New-Item -ItemType Directory -Force dist | Out-Null
+          Compress-Archive -Path target/release/attest.exe -DestinationPath "dist/$env:ARTIFACT"
+          $hash = (Get-FileHash "dist/$env:ARTIFACT" -Algorithm SHA256).Hash.ToLower()
+          "$hash  $env:ARTIFACT" | Out-File -Encoding ascii "dist/$env:ARTIFACT.sha256"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ${{ matrix.artifact }}
+          path: |
+            dist/${{ matrix.artifact }}
+            dist/${{ matrix.artifact }}.sha256
+          if-no-files-found: error
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/download-artifact@v8
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Generate checksums and channel manifests
+        shell: bash
+        env:
+          TOOL: attest
+          TAG: ${{ github.ref_name }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          sha256sum dist/*.tar.gz dist/*.zip > dist/SHA256SUMS.txt
+          python3 tools/render_release_template.py \
+            --template .github/homebrew/formula.rb.tmpl \
+            --checksums dist/SHA256SUMS.txt \
+            --output dist/attest.rb
+          python3 tools/render_release_template.py \
+            --template .github/scoop/attest.json.tmpl \
+            --checksums dist/SHA256SUMS.txt \
+            --output dist/attest.json
+          ruby -c dist/attest.rb
+          python3 -m json.tool dist/attest.json >/dev/null
+      - uses: softprops/action-gh-release@v3
+        with:
+          generate_release_notes: true
+          files: dist/*
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
+      - name: Publish npm wrapper
+        working-directory: packages/npm
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        shell: bash
+        run: npm publish --access public
+
+  notify-homebrew-tap:
+    needs: publish
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch to homebrew-tap
+        env:
+          TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          TAG: ${{ github.ref_name }}
+          REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          payload="$(jq -n \
+            --arg tool "attest" \
+            --arg tag "$TAG" \
+            --arg repo "$REPO" \
+            '{event_type:"tool-released", client_payload:{tool:$tool, tag:$tag, repo:$repo}}')"
+          curl -fsSL -X POST \
+            -H "Authorization: Bearer $TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/harrisonwang/homebrew-tap/dispatches" \
+            -d "$payload"
+
+  notify-scoop-bucket:
+    needs: publish
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch to scoop-bucket
+        env:
+          TOKEN: ${{ secrets.SCOOP_BUCKET_TOKEN }}
+          TAG: ${{ github.ref_name }}
+          REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          payload="$(jq -n \
+            --arg tool "attest" \
+            --arg tag "$TAG" \
+            --arg repo "$REPO" \
+            '{event_type:"tool-released", client_payload:{tool:$tool, tag:$tag, repo:$repo}}')"
+          curl -fsSL -X POST \
+            -H "Authorization: Bearer $TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/harrisonwang/scoop-bucket/dispatches" \
+            -d "$payload"

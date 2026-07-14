@@ -1,0 +1,78 @@
+{
+  "schema": "attest.corpus-summary.v1",
+  "candidate_sha256": "bd843c58dcab4363f8864e9144e82c73771e06874b7e76363f7e89bc6aee7564",
+  "stats": {
+    "cases": 1464,
+    "reviewed": 64,
+    "repositories": 10,
+    "documents": 114,
+    "doc_commits": 146
+  },
+  "resolvers": {
+    "path": 1074,
+    "script": 0,
+    "pkg": 1,
+    "cmd": 74,
+    "go-import": 0,
+    "env": 3,
+    "config-key": 0,
+    "symbol": 78,
+    "prose": 234
+  },
+  "repositories": {
+    "https://github.com/K-Dense-AI/claude-scientific-skills.git": {
+      "cmd": 56,
+      "env": 2,
+      "path": 853,
+      "prose": 53,
+      "symbol": 33
+    },
+    "https://github.com/alirezarezvani/claude-skills.git": {
+      "cmd": 6,
+      "path": 40,
+      "prose": 2,
+      "symbol": 2
+    },
+    "https://github.com/anthropics/skills.git": {
+      "path": 12,
+      "pkg": 1,
+      "prose": 15,
+      "symbol": 23
+    },
+    "https://github.com/cloudflare/skills.git": {
+      "cmd": 1,
+      "path": 5,
+      "prose": 4,
+      "symbol": 7
+    },
+    "https://github.com/daymade/claude-code-skills.git": {
+      "cmd": 2,
+      "env": 1,
+      "path": 8,
+      "prose": 1,
+      "symbol": 1
+    },
+    "https://github.com/huggingface/skills.git": {
+      "cmd": 6,
+      "path": 28,
+      "prose": 135,
+      "symbol": 2
+    },
+    "https://github.com/secondsky/claude-skills.git": {
+      "cmd": 3,
+      "path": 117,
+      "prose": 21,
+      "symbol": 8
+    },
+    "https://github.com/supabase/agent-skills.git": {
+      "prose": 1
+    },
+    "https://github.com/trailofbits/skills.git": {
+      "prose": 2,
+      "symbol": 2
+    },
+    "https://github.com/vercel-labs/skills.git": {
+      "path": 11
+    }
+  }
+}
