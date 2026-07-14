@@ -1,9 +1,10 @@
-use std::{collections::HashSet, path::Path};
+use std::collections::HashSet;
 
 use crate::{
     Anchor, BaselineEntry, BinKnowledge, ClaimLock, ClaimStatus, Finding, Namespace, RepoFacts,
     Tier, Token, Verdict,
     extract::extract_tokens,
+    guard,
     resolve::{Resolution, evidence_for, resolve},
 };
 
@@ -192,11 +193,10 @@ pub fn check_document(
             let mut finding = finding_from(index + 1, token, resolution);
             if finding.verdict == Verdict::Broken
                 && options.context_guard
-                && guarded_missing_binding(&finding)
+                && let Some(note) = guard::downgrade_note(&finding)
             {
                 finding.verdict = Verdict::Suspect;
-                finding.evidence.note =
-                    Some("语境守卫：原文可能是规范、否定、假设、示例或临时产物".into());
+                finding.evidence.note = Some(note.into());
             }
             if finding.verdict == Verdict::Broken {
                 finding.baseline = finding
@@ -215,7 +215,9 @@ fn finding_from(index: usize, token: Token, resolution: Resolution) -> Finding {
             Verdict::Suspect,
             Some(*ns),
             None,
-            Some(format!("文档可能应改为 `{suggestion}`")),
+            suggestion
+                .as_ref()
+                .map(|value| format!("文档可能应改为 `{value}`")),
         ),
         Resolution::Broken { ns, suggestion, .. } => (
             Verdict::Broken,
@@ -244,199 +246,6 @@ fn finding_from(index: usize, token: Token, resolution: Resolution) -> Finding {
     }
 }
 
-fn guarded_missing_binding(finding: &Finding) -> bool {
-    guarded_context(&finding.context)
-        || finding
-            .context
-            .lines()
-            .any(|line| line.trim_start().starts_with('|'))
-        || matches!(finding.ns, Some(Namespace::Script | Namespace::Package))
-            && finding.doc.ends_with("SKILL.md")
-        || finding.ns == Some(Namespace::Path)
-            && (finding.doc.ends_with("/references/AGENTS.md")
-                || finding.doc.ends_with("/templates/AGENTS.md"))
-        || finding.ns == Some(Namespace::Path)
-            && (transient_path(&finding.token) || placeholder_path(&finding.token))
-}
-
-fn guarded_context(context: &str) -> bool {
-    let lower = context.to_lowercase();
-    let plain = lower.replace(['*', '_'], "");
-    [
-        "未配置",
-        "不存在",
-        "不要",
-        "不得",
-        "禁止",
-        "避免",
-        "可选",
-        "已废弃",
-        "如果",
-        "若",
-        "例如",
-        "示例",
-        "案例",
-        "探针",
-        "实为",
-        "实际",
-        "未来",
-        "后期",
-        "创建",
-        "生成",
-        "输出",
-        "写入",
-        "保存",
-        "删除",
-        "移除",
-        "复制",
-        "移动",
-        "重命名",
-        "比如",
-        "诸如",
-        "optional",
-        "deprecated",
-        "not yet",
-        "not ",
-        "do not",
-        "don't",
-        "must not",
-        " not ",
-        "never ",
-        "avoid ",
-        "todo",
-        "e.g.",
-        "for example",
-        "por ejemplo",
-        "例：",
-        "例:",
-        "örn.",
-        "example",
-        "such as",
-        " like ",
-        "placeholder",
-        "generated",
-        "generate ",
-        "generates ",
-        "create ",
-        "created ",
-        "write ",
-        "written ",
-        "output ",
-        "save ",
-        "saved ",
-        "delete ",
-        "remove ",
-        "removed ",
-        "copy ",
-        "move ",
-        "rename ",
-        "cloned into",
-        "will be ",
-        "would be ",
-        "should be ",
-        "may be ",
-        "can be ",
-        " if ",
-        "if ",
-        " when ",
-        "when ",
-        " unless ",
-        "unless ",
-        " must ",
-        "must ",
-        " should ",
-        "should ",
-        " may ",
-        "may ",
-        " might ",
-        "might ",
-        " can ",
-        "can ",
-        "maintain ",
-        "update ",
-        "record ",
-        "load ",
-        "retrieve ",
-        "staged",
-        "runtime",
-        " format",
-        "object provides",
-        "recognizes these",
-        "gerrit-host",
-        "cross-repo",
-        "another repo",
-        "other repo",
-        "github.com/",
-        "gitignored",
-        "git-ignored",
-        "look for",
-        "check for",
-        "search for",
-        "pre-imported",
-        "preinstalled",
-        "provided by",
-        "web upload",
-        "package-claude-skills",
-        "related skills",
-        "keep ",
-        "path pattern",
-        "communicate via",
-        "run migrations",
-        "complement",
-        "for the pattern",
-        "for full list",
-        "for the full list",
-        "##### ",
-        "*.",
-    ]
-    .iter()
-    .any(|pattern| lower.contains(pattern) || plain.contains(pattern))
-}
-
-fn transient_path(value: &str) -> bool {
-    value.contains(".local.")
-        || Path::new(value)
-            .extension()
-            .is_some_and(|extension| extension == "sqlite")
-        || value.split('/').any(|component| {
-            matches!(
-                component.trim_end_matches(['.', ',', ':', ';']),
-                "node_modules"
-                    | "target"
-                    | "dist"
-                    | "build"
-                    | "coverage"
-                    | ".worktrees"
-                    | "worktrees"
-                    | "tmp"
-                    | "temp"
-                    | "logs"
-                    | "artifacts"
-                    | "output"
-                    | "outputs"
-                    | ".env"
-            )
-        })
-        || value.starts_with(".claude/workspace")
-}
-
-fn placeholder_path(value: &str) -> bool {
-    let lower = value.to_ascii_lowercase();
-    (lower.starts_with('.') && lower[1..].contains('.') && !lower.contains('/'))
-        || lower.starts_with("nnnn_")
-        || lower
-            .split('/')
-            .any(|component| component.contains("yyyy") || component.contains("xxxx"))
-        || lower.contains("placeholder")
-        || lower.contains("namehere")
-        || lower.contains("path/to/")
-        || lower.starts_with("your-")
-        || lower.starts_with("your_")
-        || lower
-            .split('/')
-            .any(|component| matches!(component, "foo" | "bar" | "example" | "sample"))
-}
-
 #[cfg(test)]
 mod tests {
     use std::collections::{HashMap, HashSet};
@@ -455,6 +264,24 @@ mod tests {
         config: HashMap<String, FirstHit>,
         go_imports: HashSet<String>,
         hashes: HashMap<String, String>,
+        ignored: HashSet<String>,
+    }
+
+    /// 真实实现的文件树带着所有祖先目录，测试替身也得带，
+    /// 不然"顶层目录存在才做迁移猜测"这类规则在测试里就失真了。
+    fn paths_with_ancestors<const N: usize>(paths: [&str; N]) -> HashSet<String> {
+        let mut set = HashSet::new();
+        for path in paths {
+            let mut current = path.trim_end_matches('/').to_owned();
+            loop {
+                set.insert(current.clone());
+                match current.rfind('/') {
+                    Some(index) => current.truncate(index),
+                    None => break,
+                }
+            }
+        }
+        set
     }
 
     impl RepoFacts for FakeFacts {
@@ -462,21 +289,28 @@ mod tests {
             self.resolve_path(doc, base, rel).is_some()
         }
         fn resolve_path(&self, _doc: &str, _base: Base, rel: &str) -> Option<String> {
+            let rel = rel.trim_end_matches('/');
             self.paths.contains(rel).then(|| rel.into())
         }
         fn glob_paths(&self, _doc: &str, _base: Base, pattern: &str) -> Vec<String> {
             self.paths
                 .iter()
-                .filter(|path| crate::resolve::wildcard_match(pattern, path))
+                .filter(|path| crate::glob_match(pattern, path))
                 .cloned()
                 .collect()
         }
         fn find_basename(&self, name: &str) -> Vec<String> {
-            self.paths
+            let mut hits: Vec<String> = self
+                .paths
                 .iter()
-                .filter(|path| path.ends_with(name))
+                .filter(|path| path.rsplit('/').next() == Some(name))
                 .cloned()
-                .collect()
+                .collect();
+            hits.sort();
+            hits
+        }
+        fn path_ignored(&self, rel: &str) -> bool {
+            self.ignored.contains(rel)
         }
         fn script(&self, name: &str) -> Option<ScriptOrigin> {
             self.scripts.get(name).cloned()
@@ -495,8 +329,11 @@ mod tests {
                 .then_some(BinKnowledge::ToolTable)
                 .unwrap_or(BinKnowledge::Unknown)
         }
-        fn tool_subcommand_known(&self, _tool: &str, _subcommand: &str) -> bool {
-            true
+        fn tool_subcommand_known(&self, _tool: &str, subcommand: &str) -> bool {
+            matches!(
+                subcommand,
+                "add" | "commit" | "status" | "push" | "test" | "clippy" | "build" | "run"
+            )
         }
         fn tool_subcommand_replacement(&self, _tool: &str, _subcommand: &str) -> Option<String> {
             None
@@ -636,78 +473,59 @@ mod tests {
         assert_eq!(missing[0].ns, Some(Namespace::Path));
     }
 
-    #[test]
-    fn context_guard_downgrades_missing_path() {
-        let findings = check_document(
-            "AGENTS.md",
-            "`CONVENTIONS.md` 尚未配置，可选。",
-            &FakeFacts::default(),
-            &CheckOptions::default(),
-        );
-        assert_eq!(findings[0].verdict, Verdict::Suspect);
+    #[derive(Deserialize)]
+    struct GuardCase {
+        #[serde(default = "default_case_doc")]
+        doc: String,
+        markdown: String,
+        #[serde(default)]
+        paths: Vec<String>,
+        #[serde(default)]
+        ignored: Vec<String>,
+        expect: Vec<String>,
+        why: String,
     }
 
+    fn default_case_doc() -> String {
+        "AGENTS.md".into()
+    }
+
+    /// 守卫行为全部由带标注的语料驱动，期望裁决和理由写在数据里。
+    /// 想给守卫加规则或例外，先在 corpus/guard-cases.jsonl 里补案例。
     #[test]
-    fn context_guard_downgrades_negative_examples_and_generated_paths() {
-        for markdown in [
-            "Do not use branch prefixes such as `feat/` or `fix/`.",
-            "Generated files include `node_modules/`, `dist/`, and `build/`.",
-            "Write the result to `REPORT.md`.",
-            "Use a file like `agent-openai.py` when describing providers.",
-            "Event tests may live at `tests/test_EventNameHere.py`.",
-            "Put personal overrides in `AGENTS.local.md`; it is gitignored.",
-            "##### References (`references/`)",
-            "Use `docs/private.md` if it is present.",
-            "A recent cleanup removed `validation.sh` stubs.",
-            "This generates files in `scripts/pr-status/`.",
-            "Zed recognizes these files: `.github/copilot-instructions.md`.",
-            "## Reference\n\n[upstream](https://github.com/example/project) is external.\n\n- `packages/removed/`",
-            "**Related Skills:**\n- `discovery-process.md` — use the workflow",
-            "Definitions use `.classes.ts` suffixes.",
-            "This is **not strategy** (`finance/analysis`).",
-            "## Message Board\n\nAgents communicate via `.agenthub/board/`: `dispatch/`.",
-            "# Run migrations\n\n`npm run migrate`",
-            "Corporate-finance complement: `finance/financial-analysis`.",
-            "See `src/spec.types.ts` for the full list.",
-            "See `basic-server-react/` for the pattern.",
-            "Filename: `research/YYYY-MM-DD-XXXX-description.md`.",
-            "Local state lives in `freshie/inventory.sqlite`.",
-        ] {
-            let findings = check_document(
-                "AGENTS.md",
-                markdown,
-                &FakeFacts::default(),
-                &CheckOptions::default(),
-            );
-            assert!(
-                findings
+    fn guard_corpus_cases_hold() {
+        for line in include_str!("../../../corpus/guard-cases.jsonl").lines() {
+            let case: GuardCase = serde_json::from_str(line).expect("guard case parses");
+            let mut paths = HashSet::new();
+            for path in &case.paths {
+                paths.extend(paths_with_ancestors([path.as_str()]));
+            }
+            let facts = FakeFacts {
+                paths,
+                ignored: case.ignored.iter().cloned().collect(),
+                ..FakeFacts::default()
+            };
+            let verdicts: Vec<String> =
+                check_document(&case.doc, &case.markdown, &facts, &CheckOptions::default())
                     .iter()
-                    .all(|finding| finding.verdict != Verdict::Broken),
-                "{markdown}"
-            );
+                    .map(|finding| {
+                        match finding.verdict {
+                            Verdict::Verified => "verified",
+                            Verdict::Broken => "broken",
+                            Verdict::Suspect => "suspect",
+                            Verdict::Silent => "silent",
+                        }
+                        .to_owned()
+                    })
+                    .collect();
+            assert_eq!(verdicts, case.expect, "{} ({})", case.markdown, case.why);
         }
-        let reference = check_document(
-            "plugin/references/AGENTS.md",
-            "Docker files live in `docker/`.",
-            &FakeFacts::default(),
-            &CheckOptions::default(),
-        );
-        assert_eq!(reference[0].verdict, Verdict::Suspect);
-        assert!(
-            check_document(
-                "agents/CLAUDE.md",
-                "### Path Pattern\n\nUse `../../` to reach the root.",
-                &FakeFacts::default(),
-                &CheckOptions::default(),
-            )
-            .is_empty()
-        );
     }
 
     #[test]
     fn path_resolver_uses_nearby_contextual_parent_paths() {
         let facts = FakeFacts {
-            paths: HashSet::from(["src/auth/ensureAuth.ts".into(), "research/finance".into()]),
+            paths: paths_with_ancestors(["src/auth/ensureAuth.ts", "research/finance"]),
             ..FakeFacts::default()
         };
         for markdown in [
@@ -727,7 +545,7 @@ mod tests {
     #[test]
     fn relocated_directory_is_suspect_with_suggestion() {
         let facts = FakeFacts {
-            paths: HashSet::from(["src/runtime/shell".into()]),
+            paths: paths_with_ancestors(["src/runtime/shell"]),
             ..FakeFacts::default()
         };
         let findings = check_document(
@@ -742,6 +560,43 @@ mod tests {
             findings[0].suggestion.as_deref(),
             Some("文档可能应改为 `src/runtime/shell`")
         );
+    }
+
+    #[test]
+    fn ambiguous_relocation_lists_candidates_without_a_suggestion() {
+        let facts = FakeFacts {
+            paths: paths_with_ancestors(["src/runtime/shell/mod.rs", "src/legacy/shell/mod.rs"]),
+            ..FakeFacts::default()
+        };
+        let findings = check_document(
+            "AGENTS.md",
+            "The shell lives in `src/shell/`.",
+            &facts,
+            &CheckOptions::default(),
+        );
+
+        assert_eq!(findings[0].verdict, Verdict::Suspect);
+        assert_eq!(findings[0].suggestion, None);
+        assert_eq!(
+            findings[0].evidence.alternatives,
+            ["src/legacy/shell", "src/runtime/shell"]
+        );
+    }
+
+    #[test]
+    fn repo_slug_without_local_anchor_stays_silent() {
+        // owner/repo 这类两段名，顶层目录在仓库里不存在，就不做迁移猜测。
+        let facts = FakeFacts {
+            paths: paths_with_ancestors(["distribution/attest-action/action.yml"]),
+            ..FakeFacts::default()
+        };
+        let findings = check_document(
+            "AGENTS.md",
+            "Install `harrisonwang/attest-action` from GitHub.",
+            &facts,
+            &CheckOptions::default(),
+        );
+        assert!(findings.is_empty());
     }
 
     #[test]
@@ -1128,19 +983,22 @@ mod tests {
         reviewed: bool,
     }
 
+    /// 语料门禁分两条线：broken 率衡量 CI 真能拦住多少（suspect 只警告不拦），
+    /// broken+suspect 率衡量总检出。两个数字分开报，谁也不给谁凑数。
     #[test]
-    fn reviewed_corpus_meets_path_detection_gate() {
+    fn reviewed_corpus_meets_path_detection_gates() {
         let cases: Vec<CorpusCase> = include_str!("../../../corpus/reviewed.jsonl")
             .lines()
             .map(|line| serde_json::from_str(line).unwrap())
             .filter(|case: &CorpusCase| case.reviewed && case.resolver == "path")
             .collect();
         assert!(cases.len() >= 200, "reviewed corpus unexpectedly shrank");
-        let mut detected = 0;
+        let mut broken = 0;
+        let mut suspect = 0;
         let mut undetected = Vec::new();
         for case in &cases {
             let facts = FakeFacts {
-                paths: HashSet::from([case.after.clone()]),
+                paths: paths_with_ancestors([case.after.as_str()]),
                 ..FakeFacts::default()
             };
             let fixed = check_document(
@@ -1161,19 +1019,24 @@ mod tests {
                 &facts,
                 &CheckOptions::default(),
             );
-            if stale.first().is_some_and(|finding| {
-                matches!(finding.verdict, Verdict::Broken | Verdict::Suspect)
-            }) {
-                detected += 1;
-            } else {
-                undetected.push(case.before.clone());
+            match stale.first().map(|finding| finding.verdict) {
+                Some(Verdict::Broken) => broken += 1,
+                Some(Verdict::Suspect) => suspect += 1,
+                _ => undetected.push(case.before.clone()),
             }
         }
-        let coverage = detected as f64 / cases.len() as f64;
+        let broken_rate = broken as f64 / cases.len() as f64;
+        let flagged_rate = (broken + suspect) as f64 / cases.len() as f64;
         assert!(
-            coverage >= 0.80,
-            "corpus coverage {:.1}% is below the P3 gate of 80%; undetected examples: {:?}",
-            coverage * 100.0,
+            broken_rate >= 0.55,
+            "CI 拦截率（broken）{:.1}% 低于 55% 门禁；总检出 {:.1}%",
+            broken_rate * 100.0,
+            flagged_rate * 100.0,
+        );
+        assert!(
+            flagged_rate >= 0.80,
+            "总检出率（broken+suspect）{:.1}% 低于 80% 门禁；漏检示例：{:?}",
+            flagged_rate * 100.0,
             &undetected[..undetected.len().min(20)]
         );
     }

@@ -19,9 +19,11 @@ pub(crate) enum Resolution {
     },
     NearMiss {
         ns: Namespace,
-        suggestion: String,
+        /// 只有把握大（唯一候选）时才给出改法；拿不准就只给 note 和候选列表。
+        suggestion: Option<String>,
         note: String,
         searched: Vec<String>,
+        alternatives: Vec<String>,
     },
     Broken {
         ns: Namespace,
@@ -79,10 +81,12 @@ pub(crate) fn evidence_for(resolution: &Resolution) -> BindingEvidence {
             suggestion,
             note,
             searched,
+            alternatives,
             ..
         } => BindingEvidence {
             searched: searched.clone(),
-            nearest: Some(suggestion.clone()),
+            nearest: suggestion.clone(),
+            alternatives: alternatives.clone(),
             note: Some(note.clone()),
             ..BindingEvidence::default()
         },
@@ -107,25 +111,4 @@ pub(crate) fn edit_distance(left: &str, right: &str) -> usize {
         previous = current;
     }
     previous.last().copied().unwrap_or(0)
-}
-
-pub(crate) fn wildcard_match(pattern: &str, candidate: &str) -> bool {
-    let mut previous = vec![false; candidate.chars().count() + 1];
-    previous[0] = true;
-    let candidate: Vec<_> = candidate.chars().collect();
-    for pattern_char in pattern.chars() {
-        let mut current = vec![false; candidate.len() + 1];
-        if pattern_char == '*' {
-            current[0] = previous[0];
-        }
-        for (index, candidate_char) in candidate.iter().enumerate() {
-            current[index + 1] = match pattern_char {
-                '*' => previous[index + 1] || current[index],
-                '?' => previous[index],
-                _ => previous[index] && pattern_char == *candidate_char,
-            };
-        }
-        previous = current;
-    }
-    previous.last().copied().unwrap_or(false)
 }

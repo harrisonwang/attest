@@ -10,7 +10,7 @@ This runbook separates one-time bootstrap work from the repeatable tag release. 
    - `HOMEBREW_TAP_TOKEN`: token allowed to dispatch `harrisonwang/homebrew-tap`.
    - `SCOOP_BUCKET_TOKEN`: token allowed to dispatch `harrisonwang/scoop-bucket`.
    - `NPM_TOKEN`: required for the first package publication and retained only as an emergency fallback.
-4. After `@harrisonwang/attest` exists on npm, configure its [trusted publisher](https://docs.npmjs.com/trusted-publishers/) with organization/user `harrisonwang`, repository `attest`, workflow `release.yml`, and permission to run `npm publish`.
+4. After `@harrisonwang/attest` exists on npm, configure its [trusted publisher](https://docs.npmjs.com/trusted-publishers/) with organization/user `harrisonwang`, repository `attest`, workflow `.github/workflows/release.yml`, and permission to run `npm publish`.
 5. Verify tag protection and remove the long-lived npm token after one OIDC-backed release succeeds.
 
 The release workflow grants `id-token: write` only to the publish job. npm 11 on Node 24 uses that OIDC identity when the trusted publisher is configured and otherwise falls back to `NPM_TOKEN` for the bootstrap release.

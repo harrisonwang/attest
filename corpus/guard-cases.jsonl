@@ -1,0 +1,31 @@
+{"markdown": "Do not use branch prefixes such as `feat/` or `fix/`.", "expect": ["suspect", "suspect"], "why": "否定加举例，语境守卫降级"}
+{"markdown": "Generated files include `node_modules/`, `dist/`, and `build/`.", "expect": ["suspect", "suspect", "suspect"], "why": "构建产物目录，形状守卫接住"}
+{"markdown": "Write the result to `REPORT.md`.", "expect": ["suspect"], "why": "句子在说文件会被写出来，不是说它现在存在"}
+{"markdown": "Use a file like `agent-openai.py` when describing providers.", "expect": ["suspect"], "why": "like 是举例口吻"}
+{"markdown": "Event tests may live at `tests/test_EventNameHere.py`.", "expect": [], "why": "父目录不存在，按公理 1 沉默"}
+{"markdown": "Put personal overrides in `AGENTS.local.md`; it is gitignored.", "expect": ["suspect"], "why": ".local. 是本地覆盖文件的通用形状"}
+{"markdown": "##### References (`references/`)", "expect": ["suspect"], "why": "标题行是版式不是断言"}
+{"markdown": "Use `docs/private.md` if it is present.", "expect": [], "why": "父目录不存在，沉默"}
+{"markdown": "A recent cleanup removed `validation.sh` stubs.", "expect": ["suspect"], "why": "句子明说文件被删了"}
+{"markdown": "This generates files in `scripts/pr-status/`.", "expect": [], "why": "父目录不存在，沉默"}
+{"markdown": "Zed recognizes these files: `.github/copilot-instructions.md`.", "expect": [], "why": "父目录不存在，沉默"}
+{"markdown": "## Reference\n\n[upstream](https://github.com/example/project) is an external reference.\n\n- `packages/removed/`", "expect": [], "why": "父目录不存在，沉默；不再靠窗口里的 github.com 洗白"}
+{"markdown": "**Related Skills:**\n- `discovery-process.md` — use the workflow", "expect": ["broken"], "why": "裸文档名在仓库里找不到就是真断链；旧实现靠 'related skills' 字符串洗白，属于过拟合"}
+{"markdown": "Definitions use `.classes.ts` suffixes.", "expect": ["suspect"], "why": "前导点的后缀模式是形状，不是路径"}
+{"markdown": "This is **not strategy** (`finance/analysis`).", "expect": [], "why": "父目录不存在，沉默"}
+{"markdown": "## Message Board\n\nAgents communicate via `.agenthub/board/`: `dispatch/`.", "expect": ["broken"], "why": "机械判定就是断链；真实仓库里这类运行时目录靠 .gitignore 规则降级，见下一条"}
+{"markdown": "## Message Board\n\nAgents communicate via `.agenthub/board/`: `dispatch/`.", "ignored": ["dispatch/"], "expect": ["suspect"], "why": "路径命中 ignore 规则，识别为运行时产物"}
+{"markdown": "# Run migrations\n\n`npm run migrate`", "expect": ["broken"], "why": "脚本不存在就是断链；旧实现靠 'run migrations' 字符串洗白，属于过拟合"}
+{"markdown": "Corporate-finance complement: `finance/financial-analysis`.", "expect": [], "why": "父目录不存在，沉默"}
+{"markdown": "See `src/spec.types.ts` for the full list.", "expect": [], "why": "父目录不存在，沉默"}
+{"markdown": "See `basic-server-react/` for the pattern.", "expect": ["broken"], "why": "裸目录引用找不到就是断链；真实仓库里它在 doc-dir 下，绑定层会接住"}
+{"markdown": "Filename: `research/YYYY-MM-DD-XXXX-description.md`.", "paths": ["research/notes.md"], "expect": ["suspect"], "why": "YYYY/XXXX 占位符形状"}
+{"markdown": "Local state lives in `freshie/inventory.sqlite`.", "paths": ["freshie/app.py"], "expect": ["suspect"], "why": "sqlite 是运行时产物形状"}
+{"doc": "plugin/references/AGENTS.md", "markdown": "Docker files live in `docker/`.", "expect": ["suspect"], "why": "references/ 目录装的是参考资料，路径常指向别的仓库"}
+{"doc": "agents/CLAUDE.md", "markdown": "### Path Pattern\n\nUse `../../` to reach the root.", "expect": [], "why": "纯 .. 遍历直接忽略"}
+{"markdown": "`CONVENTIONS.md` 尚未配置，可选。", "expect": ["suspect"], "why": "句子明说还没配置"}
+{"markdown": "Before merging, run `npm run test:e2e` when you are done.", "expect": ["broken"], "why": "when 不再是免罪符：脚本缺失就是红，这是守卫收缩后必须守住的牙齿"}
+{"markdown": "# Build\n\nRun `npm run build` when finished.\n\nSee `src/removed_module.rs` for details.", "paths": ["src/main.rs"], "expect": ["broken", "broken"], "why": "守卫只看 token 所在行，前文的 when 不污染后面的 token"}
+{"markdown": "Run `git frobnicate` before pushing.", "expect": [], "why": "表内工具的未知子命令保持沉默，不能冒充核实过"}
+{"markdown": "Install the action from `harrisonwang/attest-action` on GitHub.", "paths": ["distribution/attest-action/action.yml"], "expect": [], "why": "顶层目录不存在的两段名（仓库缩写）不做迁移猜测"}
+{"markdown": "See `src/shell/`.", "paths": ["src/runtime/shell/mod.rs", "src/legacy/shell/mod.rs"], "expect": ["suspect"], "why": "多个同名候选只列出、不下结论"}

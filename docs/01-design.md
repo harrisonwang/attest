@@ -58,54 +58,68 @@ Finding (verified / broken / suspect / silent)
 ```
 attest/
 ├── crates/
-│   ├── attest-core/          # 纯逻辑:extract + bind + verdict + report 组装
-│   │   ├── extract.rs        # CommonMark → Token[]
-│   │   ├── token.rs          # Token / 命令行解析 / 占位符
-│   │   ├── facts.rs          # trait RepoFacts(见下)
-│   │   ├── resolve/          # 每个 resolver 一个文件,注册表模式
-│   │   │   ├── path.rs  script.rs  pkg.rs  cmd.rs  env.rs  symbol.rs  ...
-│   │   ├── verdict.rs        # 裁决 + 语境守卫 + 基线比对
-│   │   └── report.rs         # attest.report.v1 组装
-│   └── attest-cli/           # 适配层:facts 采集(fs/git/rg) + 渲染(tty/json/github) + baseline 存取
+│   ├── attest-core/          # 纯逻辑：extract + bind + guard + verdict
+│   │   ├── extract.rs        # CommonMark → Token[]，含命令行解析
+│   │   ├── model.rs          # Token / Finding / Claim / Report 等数据类型
+│   │   ├── facts.rs          # trait RepoFacts（见下）
+│   │   ├── glob.rs           # 路径 glob 与名字通配，CLI 和测试替身共用
+│   │   ├── guard.rs          # 四类降级守卫：结构 / 语境 / 文档类别 / 形状
+│   │   ├── resolve/          # 每个 resolver 一个文件，注册表模式
+│   │   │   ├── path.rs  script.rs  package.rs  command.rs
+│   │   │   ├── go_import.rs  env.rs  config_key.rs  symbol.rs
+│   │   └── engine.rs         # 裁决编排 + 基线比对 + lock 复查
+│   └── attest-cli/           # 适配层，按职责分模块
+│       ├── main.rs           # 参数解析与分发
+│       ├── check.rs          # 检查编排（全量 / --since / --strict）
+│       ├── facts.rs          # 事实采集：文件树、manifest、词表索引、check-ignore
+│       ├── extract.rs  llm.rs  vouch.rs   # 抽取、作者时点 LLM、IR 定向
+│       ├── store.rs  render.rs  surface.rs  prose.rs  config.rs
 └── docs/
 ```
 
 ```rust
-/// core 与世界的唯一边界。CLI 给真实实现,测试给 FakeRepoFacts。
+/// core 与世界的唯一边界。CLI 给真实实现，测试给 FakeFacts。节选：
 pub trait RepoFacts {
-    fn file_exists(&self, base: Base, rel: &str) -> bool;
-    fn find_basename(&self, name: &str) -> Vec<String>;          // path~ 近失用
-    fn script(&self, name: &str) -> Option<ScriptOrigin>;         // package.json/Make/just/cargo alias
+    fn path_bases(&self, doc: &str) -> Vec<Base>;                 // §6 作用域序
+    fn resolve_path(&self, doc: &str, base: Base, rel: &str) -> Option<String>;
+    fn glob_paths(&self, doc: &str, base: Base, pattern: &str) -> Vec<String>;
+    fn find_basename(&self, name: &str) -> Vec<String>;          // path~ 迁移猜测用
+    fn path_ignored(&self, rel: &str) -> bool;                   // 命中 .gitignore → 运行时产物
+    fn script(&self, name: &str) -> Option<ScriptOrigin>;        // package.json/Make/just/cargo alias
     fn workspace_pkg(&self, name: &str) -> bool;
-    fn binary_known(&self, name: &str) -> BinKnowledge;           // repo 自产 bin / PATH / 工具表
-    fn grep_word(&self, word: &str) -> Option<FirstHit>;          // 符号/env/字面量,懒执行
-    fn config_key(&self, file_hint: Option<&str>, key: &str) -> Option<FirstHit>;
-    fn content_hash(&self, base: Base, rel: &str) -> Option<u64>; // lock 锚点用
+    fn binary_known(&self, name: &str) -> BinKnowledge;          // repo 自产 bin / PATH / 工具表
+    fn tool_subcommand_known(&self, tool: &str, sub: &str) -> bool;
+    fn grep_word(&self, word: &str) -> Option<FirstHit>;         // 符号/env，词表索引
+    fn config_key(&self, doc: &str, hint: Option<&str>, key: &str) -> Option<FirstHit>;
+    fn content_hash(&self, doc: &str, base: Base, rel: &str) -> Option<String>;
 }
 ```
 
-采集策略：文件树来自 `git ls-files`（自动尊重 .gitignore；非 git 目录退化为受限 walk），scripts/包名/target 表启动时一次性建，grep 类懒执行带 memo。全部只读。
+采集策略：文件树来自 `git ls-files`（自动尊重 .gitignore；非 git 目录退化为受限 walk），scripts/包名/bin 表启动时一次性建。词查询（`grep_word`）在首次调用时对可搜索文件建一遍"词 → 首个命中"的索引，之后全部查表，不再逐词扫全仓库。`path_ignored` 走 `git check-ignore` 并缓存。全部只读。
 
 ## 5. Resolver 协议与 v1 清单
 
 ```rust
-pub enum BindOutcome {
-    Bound { ns: Namespace, referent: String, tier: Tier },  // Tier: Exact | Normalized | Relocated
-    NearMiss { suggestion: String, note: String },           // → suspect,永不 broken
-    NoMatch,                                                 // → 该 resolver 沉默
+pub enum Resolution {
+    Bound { ns, referent, tier, alternatives },      // Tier: Exact | Normalized | Relocated
+    NearMiss { ns, suggestion: Option<String>,       // → suspect，永不 broken；
+               note, searched, alternatives },       //   唯一候选才给 suggestion，多候选只列出
+    Broken { ns, searched, suggestion },             // → 该 resolver 判定理应绑定而绑不上
+    Ignored,                                         // 占位符、通配无匹配等，直接忽略
+    NoMatch,                                         // → 该 resolver 沉默
 }
 ```
 
-绑定顺序即命名空间优先级，首个 `Bound` 胜出；所有 resolver 的 `NearMiss` 汇总保留（供报告给建议）。一个 token 全部 `NoMatch` → verdict `silent`，默认不出现在报告里。
+绑定顺序即命名空间优先级，首个 `Bound` 胜出；所有 resolver 的 `NearMiss` 汇总保留（供报告给建议）。一个 token 全部 `NoMatch` → verdict `silent`，默认不出现在报告里。改法建议是要消耗用户信任的东西，只在把握大（唯一候选）时给；拿不准就只给 note 和候选列表。
 
 v1 resolver 清单（按优先级）：
 
 | # | resolver | 绑定 | 近失（suspect） | 沉默条件 |
 |---|----------|------|----------------|---------|
-| 1 | path | 按 §6 基目录序存在 | basename 在别处存在（探针 `path~` 档）→ 给出新位置 | 不含 `/` 且无已知扩展名 |
+| 1 | path | 按 §6 基目录序存在 | 同名文件在别处（探针 `path~` 档，唯一命中才给改法）；命中 .gitignore 的路径按运行时产物降级 | 不含 `/` 且无已知扩展名；父目录不存在；owner/repo 形状的仓库缩写（两段、无扩展名、首段不存在）不做迁移猜测 |
 | 2 | script | package.json scripts / Makefile / justfile target / cargo alias | 编辑距离 ≤2 的同源 script（`test`→`test:unit`） | — |
 | 3 | pkg | workspace 包名（pnpm/npm/cargo members） | 前缀匹配 | — |
-| 4 | cmd | repo 自产 bin（Cargo bins、package.json bin）/ PATH / 工具表（§11） | 工具表内已知改名 | 单个普通英文词 |
+| 4 | cmd | repo 自产 bin（Cargo bins、package.json bin）/ PATH / 工具表（§11） | 工具表内已知改名 | 单个普通英文词；表内工具的未知子命令（表没有版本概念，不敢说错也不冒充核实过） |
 | 5 | go-import | go.mod module + require 表 + vendored stdlib 表 | — | 无 go.mod 时整体禁用（探针教训 #4） |
 | 6 | env | `[A-Z][A-Z0-9_]{2,}` 且 grep_word 命中源码 | — | grep 不中（可能是文档自造名） |
 | 7 | config-key | 同文档/邻近提到的 YAML/TOML/JSON 里的键 | — | 无候选文件（探针教训 #5：`ask_audience`） |
@@ -117,7 +131,7 @@ symbol 用 grep 而非 tree-sitter 是刻意的 v1 取舍：grep 的假绿（词
 
 token 的解析基目录（`Base`）按序尝试，首个命中即绑定：
 
-1. **doc-dir**：文档自身所在目录（探针教训 #2：SKILL.md 的 `phases/` 相对自身成立）
+1. **doc-dir**：文档自身所在目录（探针教训 #2：例如某个被扫仓库 SKILL.md 里的 `phases/`，只有相对文档自身才成立）
 2. **project-root**：从文档向上最近的含 manifest（package.json/Cargo.toml/go.mod/pyproject.toml）的目录
 3. **repo-root**：仓库根
 4. **workspace 命名空间**：与目录无关的名字空间（包名、workspace member、`--filter` 目标）
@@ -133,7 +147,14 @@ token 的解析基目录（`Base`）按序尝试，首个命中即绑定：
 | `suspect` | 近失 / 语境守卫降级 / 多基歧义 / 银档未确认 | 警告，不失败 |
 | `silent` | 所有 resolver NoMatch | 不出现（`--verbose` 可见） |
 
-**语境守卫**（探针教训 #6，jadeenvoy 的 `CONVENTIONS.md`——文档原文"未配置；可建 symlink"，指涉物不存在是文档本身声明的事实）：finding 携带所在行原文，若行匹配否定/假设模式（`未配置|不存在|可选|已废弃|如果|若|optional|deprecated|not yet|TODO|e.g.|例如`），`broken` 自动降为 `suspect`。廉价、诚实、可关闭；语境的严格判定属于银档。
+**降级守卫**：broken 在报出之前过四道守卫，任何一道命中就降为 `suspect`，并把降级理由写进 evidence.note。四道守卫各管一件事：
+
+- **结构守卫**：token 在标题或表格行里——那是版式，不是对仓库的强断言。
+- **语境守卫**：token 所在的那一句在说否定/禁止、可选/废弃、举例，或者文件是被生成、删除的（探针教训 #6，jadeenvoy 的 `CONVENTIONS.md`——原文"未配置；可建 symlink"，指涉物不存在是文档自己说的）。词表故意收得很小，四组高置信词，先遮掉反引号里的内容再匹配。
+- **文档类别守卫**：SKILL.md 里的脚本和包名、references/ 与 templates/ 目录下的路径，常常在说别的仓库。
+- **形状守卫**：token 本身长得像占位符（`YYYY-MM-DD`、`path/to/`）或运行时产物（`dist/`、`*.sqlite`）；仓库自己的 ignore 规则由 `path_ignored` 事实查询单独接住。
+
+三条纪律：守卫只看 token 所在的那一行，不看多行窗口——窗口匹配会让前文一个 "when" 把后面不相干 token 的红拉下水；想加词先回答"这是普遍的语言现象，还是某个仓库的巧合"，后者只能进 `corpus/guard-cases.jsonl` 做回归，不能进代码；守卫廉价、可解释、可关闭，语境的严格判定属于银档。
 
 ## 8. 基线棘轮（brownfield 采纳）
 
@@ -175,7 +196,7 @@ claims:
       - { ns: symbol, ref: "adapter-static",             hash: "d41d8cd9" }
 ```
 
-规则与 answer-trace 银档同源：**LLM 提议的每个锚点必须当场确定性绑定成功，否则条目不生成**（不洗白幻觉）。审批流就是 git review——lock 是入库文件，`proposed` 条目在 PR 里被人/agent 审阅后合入即 `approved`，不造新 UI。lock 使用严格 schema：未知字段、空 claim/doc/anchors/ref、非法哈希或零行号都直接作为输入错误退出，避免拼写错误让审批静默失效。CI 逐条复查来源文档与锚点：来源文档或锚点删除 → `broken`；存在 + 哈希未变 → 断言自动仍成立（零成本绿）；哈希变了 → `suspect("锚点代码已变更,断言待复核")`，由人或 agent 复核后更新 lock。**哈希变更永不直接判 broken**（公理 1：代码变了 ≠ 断言错了）。
+规则与 answer-trace 银档同源：**LLM 提议的每个锚点必须当场确定性绑定成功，否则条目不生成**（不洗白幻觉）。审批流就是 git review——lock 是入库文件，`proposed` 条目在 PR 里被人/agent 审阅后合入即 `approved`，不造新 UI。lock 使用严格 schema：未知字段、空 claim/doc/anchors/ref、非法哈希或零行号都按输入错误直接退出，避免拼写错误让审批静默失效。CI 逐条复查来源文档与锚点：来源文档或锚点删除 → `broken`；存在 + 哈希未变 → 断言自动仍成立（零成本绿）；哈希变了 → `suspect("锚点代码已变更,断言待复核")`，由人或 agent 复核后更新 lock。**哈希变更永不直接判 broken**（公理 1：代码变了 ≠ 断言错了）。
 
 ## 11. 第三方工具表
 
@@ -242,9 +263,11 @@ context-guard = true
 
 ## 14. 测试与语料策略
 
-- **golden 测试**：core 全部走 `FakeRepoFacts`——(文档文本 + 假事实) → 期望 findings，纯内存、毫秒级、无环境依赖。每个 resolver 的每条规格（绑定/近失/沉默）至少一条 golden。
+- **golden 测试**：core 全部走 `FakeFacts`——(文档文本 + 假事实) → 期望 findings，纯内存、毫秒级、无环境依赖。每个 resolver 的每条规格（绑定/近失/沉默）至少一条 golden。测试替身和真实实现共用同一套 glob 匹配，文件树同样带祖先目录，避免"测试里过、生产里翻"的语义分叉。
+- **守卫语料**：`corpus/guard-cases.jsonl` 逐条标注真实句子的期望裁决和理由，守卫的每次调整都要对着它回归。有些句子的诚实结论就是 broken（缺脚本就是缺脚本），不许为了好看往守卫里塞例外。
 - **挖矿语料**：git 历史里"commit A 改了代码、commit B 修了文档"的配对就是带标注的真实 drift 案例。P0 的挖矿脚本从自有仓库 + 知名开源仓库攒 200+ 例，同时回答三个问题：断言类型的真实频率分布（决定 resolver 优先级）、精度基线、launch 素材。
-- **self-host**：attest 的 CI 用 attest 检查自己的 docs/ 与 CLAUDE.md，第一天起 dogfood。
+- **检出双线门禁**：对挖矿语料分开统计两个数，谁也不给谁凑数——broken 率（CI 真会拦住的，门禁 ≥55%）和 broken+suspect 总检出（门禁 ≥80%）。当前实测 broken 58.6%、总检出 85.0%。
+- **self-host**：attest 的 CI 用 attest 检查自己的 docs/ 与 README，第一天起 dogfood。已知盲区也要诚实：无语言标注的 fence 不产 token（§3 的刻意取舍），所以设计文档里用纯 fence 画的目录树，attest 自己看不见——这类漂移只能靠人和 review。
 - **精度指标**：金档误报率目标 **0**（对全语料）；每次发布前对语料全量回归。
 
 ## 15. 遗留的两个开放问题（已收敛）
@@ -252,4 +275,4 @@ context-guard = true
 立项讨论中挂起的两个问题，方案如下，实现中再验证：
 
 1. **lock 审批流**：复用 git review（§10）。`proposed` 条目由 `attest extract` 产生，PR 审阅即审批，无新 UI。agent 可以代人审（Claude Code 里 review lock diff），但合入动作留给人的 merge 权限——与 vouch 的"公证人不替你签字"立场一致。
-2. **monorepo 作用域**：四级基目录序 + 钉 scope 配置（§6）。探针的 `phases/` 案例已验证 doc-dir 优先的必要性；歧义不报警只记 evidence，等真实语料里出现歧义伤害再考虑升级策略。
+2. **monorepo 作用域**：四级基目录序 + 钉 scope 配置（§6）。探针里的 `phases/` 示例已验证 doc-dir 优先的必要性；歧义不报警只记 evidence，等真实语料里出现歧义伤害再考虑升级策略。

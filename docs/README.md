@@ -18,4 +18,4 @@
 | [tool-table.md](tool-table.md) | vendored 第三方命令表的数据结构、精度纪律与 PR 验收 | 已实现 |
 | [probe/drift-probe.py](probe/drift-probe.py) | 探针脚本原件（含已知缺陷注记） | 已归档 |
 
-P0–P3 的可本地实现部分已落地；当前剩余工作是按 [04-implementation-status.md](04-implementation-status.md) 执行带凭据的发布、上游 PR 与发帖。P4 继续按真实需求信号牵引，不作为 v0.1 门禁。
+P0–P3 的可本地实现部分已落地；当前剩余工作是按 [04-implementation-status.md](04-implementation-status.md) 执行带凭据的发布、上游 PR 与发帖。P4 继续按真实需求信号牵引，不算 v0.1 门禁。

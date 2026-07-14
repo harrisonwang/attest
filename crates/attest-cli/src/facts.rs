@@ -7,27 +7,29 @@ use std::{
 };
 
 use anyhow::{Context, Result};
-use attest_core::{Base, BinKnowledge, FirstHit, RepoFacts, ScriptOrigin};
+use attest_core::{Base, BinKnowledge, FirstHit, RepoFacts, ScriptOrigin, glob_match};
 use serde::Deserialize;
 use serde_json::Value as JsonValue;
 use sha2::{Digest, Sha256};
 use walkdir::WalkDir;
 
-use crate::glob::compile_glob;
-
 #[derive(Debug)]
 pub struct FsRepoFacts {
     root: PathBuf,
+    is_git: bool,
     files: Vec<String>,
     known_paths: HashSet<String>,
     basenames: HashMap<String, Vec<String>>,
-    word_hits: Mutex<HashMap<String, Option<FirstHit>>>,
+    // 词 -> (files 下标, 行号)。首次查询时对可搜索文件建一次索引，
+    // 之后所有 env/symbol/锚点查询都是查表，不再逐词扫全仓库。
+    word_index: OnceLock<HashMap<String, (u32, u32)>>,
+    ignore_hits: Mutex<HashMap<String, bool>>,
     scripts: HashMap<String, ScriptOrigin>,
     packages: HashSet<String>,
     repo_bins: HashMap<String, String>,
     go_module: Option<String>,
     go_requires: Vec<String>,
-    scopes: Vec<(regex::Regex, Base)>,
+    scopes: Vec<(String, Base)>,
 }
 
 impl FsRepoFacts {
@@ -70,22 +72,21 @@ impl FsRepoFacts {
             referents.sort();
             referents.dedup();
         }
-        let scopes = scope
-            .iter()
-            .map(|(pattern, base)| Ok((compile_glob(pattern)?, *base)))
-            .collect::<Result<Vec<_>>>()?;
+        let is_git = root.join(".git").exists();
         let mut facts = Self {
             root,
+            is_git,
             files,
             known_paths,
             basenames,
-            word_hits: Mutex::new(HashMap::new()),
+            word_index: OnceLock::new(),
+            ignore_hits: Mutex::new(HashMap::new()),
             scripts: HashMap::new(),
             packages: HashSet::new(),
             repo_bins: HashMap::new(),
             go_module: None,
             go_requires: Vec::new(),
-            scopes,
+            scopes: scope.to_vec(),
         };
         facts.collect_manifests()?;
         Ok(facts)
@@ -494,7 +495,7 @@ impl RepoFacts for FsRepoFacts {
     fn path_bases(&self, doc: &str) -> Vec<Base> {
         self.scopes
             .iter()
-            .find_map(|(pattern, base)| pattern.is_match(doc).then_some(vec![*base]))
+            .find_map(|(pattern, base)| glob_match(pattern, doc).then_some(vec![*base]))
             .unwrap_or_else(|| vec![Base::DocDir, Base::ProjectRoot, Base::RepoRoot])
     }
 
@@ -525,13 +526,10 @@ impl RepoFacts for FsRepoFacts {
         else {
             return Vec::new();
         };
-        let Ok(pattern) = compile_glob(&relative_pattern) else {
-            return Vec::new();
-        };
         let mut matches = self
             .known_paths
             .iter()
-            .filter(|path| !path.is_empty() && pattern.is_match(path))
+            .filter(|path| !path.is_empty() && glob_match(&relative_pattern, path))
             .filter_map(|path| self.resolve_path(doc, Base::RepoRoot, path))
             .collect::<Vec<_>>();
         matches.sort();
@@ -541,6 +539,35 @@ impl RepoFacts for FsRepoFacts {
 
     fn find_basename(&self, name: &str) -> Vec<String> {
         self.basenames.get(name).cloned().unwrap_or_default()
+    }
+
+    fn path_ignored(&self, rel: &str) -> bool {
+        // 文档提到的路径命中 .gitignore，多半是运行时产物，只在这里问 git 一次并缓存。
+        if !self.is_git {
+            return false;
+        }
+        let key = rel.trim_end_matches('/').to_owned();
+        if key.is_empty() {
+            return false;
+        }
+        if let Some(cached) = self
+            .ignore_hits
+            .lock()
+            .expect("ignore cache is not poisoned")
+            .get(&key)
+        {
+            return *cached;
+        }
+        let ignored = Command::new("git")
+            .args(["check-ignore", "-q", "--", &key])
+            .current_dir(&self.root)
+            .output()
+            .is_ok_and(|output| output.status.success());
+        self.ignore_hits
+            .lock()
+            .expect("ignore cache is not poisoned")
+            .insert(key, ignored);
+        ignored
     }
 
     fn script(&self, name: &str) -> Option<ScriptOrigin> {
@@ -651,21 +678,13 @@ impl RepoFacts for FsRepoFacts {
     }
 
     fn grep_word(&self, word: &str) -> Option<FirstHit> {
-        if let Some(hit) = self
-            .word_hits
-            .lock()
-            .expect("word cache is not poisoned")
-            .get(word)
-            .cloned()
-        {
-            return hit;
-        }
-        let hit = find_word_hit(&self.root, &self.files, word);
-        self.word_hits
-            .lock()
-            .expect("word cache is not poisoned")
-            .insert(word.to_owned(), hit.clone());
-        hit
+        let index = self
+            .word_index
+            .get_or_init(|| build_word_index(&self.root, &self.files));
+        index.get(word).map(|&(file, line)| FirstHit {
+            path: self.files[file as usize].clone(),
+            line: line as usize,
+        })
     }
 
     fn config_key(&self, doc: &str, file_hint: Option<&str>, key: &str) -> Option<FirstHit> {
@@ -782,8 +801,14 @@ fn config_file(path: &str) -> bool {
         .is_some_and(|extension| matches!(extension, "toml" | "yaml" | "yml" | "json"))
 }
 
-fn find_word_hit(root: &Path, files: &[String], word: &str) -> Option<FirstHit> {
-    for relative in files.iter().filter(|path| searchable(path)) {
+/// 对可搜索文件做一遍扫描，记下每个词的首个命中位置。
+/// 词的切分规则和上限（长度 3..=128、单文件 1 MiB）与逐词扫描时代一致。
+fn build_word_index(root: &Path, files: &[String]) -> HashMap<String, (u32, u32)> {
+    let mut index = HashMap::new();
+    for (file_index, relative) in files.iter().enumerate() {
+        if !searchable(relative) {
+            continue;
+        }
         let path = root.join(relative);
         if path
             .metadata()
@@ -794,16 +819,18 @@ fn find_word_hit(root: &Path, files: &[String], word: &str) -> Option<FirstHit> 
         let Ok(contents) = fs::read_to_string(path) else {
             continue;
         };
-        for (index, line) in contents.lines().enumerate() {
-            if line_words(line).any(|candidate| candidate == word) {
-                return Some(FirstHit {
-                    path: relative.clone(),
-                    line: index + 1,
-                });
+        for (line_index, line) in contents.lines().enumerate() {
+            for word in line_words(line) {
+                if word.len() > 128 {
+                    continue;
+                }
+                index
+                    .entry(word.to_owned())
+                    .or_insert((file_index as u32, line_index as u32 + 1));
             }
         }
     }
-    None
+    index
 }
 
 fn line_words(line: &str) -> impl Iterator<Item = &str> {

@@ -34,11 +34,15 @@ pub(super) fn resolve(token: &Token, facts: &dyn RepoFacts) -> Resolution {
                 if let Some(suggestion) = facts.tool_subcommand_replacement(program, subcommand) {
                     return Resolution::NearMiss {
                         ns: Namespace::Command,
-                        suggestion,
+                        suggestion: Some(suggestion),
                         note: "工具子命令可能已改名".to_owned(),
                         searched: vec![format!("tool-table:{program}")],
+                        alternatives: Vec::new(),
                     };
                 }
+                // 工具认识、子命令不认识：表没有版本概念，不敢说错，也不能装作核实过。
+                // verified 是正面担保，这里只配沉默。
+                return Resolution::NoMatch;
             }
             Resolution::Bound {
                 ns: Namespace::Command,
