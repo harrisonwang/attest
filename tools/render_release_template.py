@@ -19,7 +19,7 @@ def load_checksums(path: Path) -> dict[str, str]:
     for line in path.read_text(encoding="utf-8").splitlines():
         parts = line.split()
         if len(parts) >= 2:
-            checksums[parts[-1].lstrip("*")] = parts[0]
+            checksums[Path(parts[-1].lstrip("*")).name] = parts[0]
     return checksums
 
 
