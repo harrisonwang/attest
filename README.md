@@ -47,7 +47,7 @@ OPENAI_API_KEY=... attest extract --llm
 
 退出码：`0` 表示没有新增 broken，`1` 表示发现新增 broken，`2` 表示配置、输入或运行错误。
 
-`attest extract` 默认只写入能够当场绑定成功的机械候选到 `.attest/claims.lock`。`--llm` 使用作者时点的 OpenAI-compatible Responses API + Structured Outputs；可通过 `ATTEST_OPENAI_MODEL`（默认 `gpt-5.6-terra`）与 `OPENAI_BASE_URL` 配置。模型提出的任一锚点无法确定性绑定时，整条 claim 都不会生成。将 `status: proposed` 审阅为 `approved` 后，`check` 会复查来源文档和锚点：任一删除都是 broken，内容哈希变化只是 suspect；lock 的未知字段、空锚点和非法哈希会作为输入错误拒绝。
+`attest extract` 默认只写入能够当场绑定成功的机械候选到 `.attest/claims.lock`。`--llm` 使用作者时点的 OpenAI-compatible Responses API + Structured Outputs；可通过 `ATTEST_OPENAI_MODEL`（默认 `gpt-5.6-terra`）与 `OPENAI_BASE_URL` 配置。模型提出的任一锚点无法确定性绑定时，整条 claim 都不会生成。将 `status: proposed` 审阅为 `approved` 后，`check` 会复查来源文档和锚点：任一删除都是 broken，内容哈希变化只是 suspect；lock 的未知字段、空锚点和非法哈希按输入错误直接拒绝。
 
 GitHub Actions 可在 checkout 后使用本仓库的 `action.yml`；默认输出 PR annotations。Claude Code 的 `/attest` skill 与可选 SessionStart hook 配方位于 `.claude/skills/attest/`。
 
@@ -80,6 +80,6 @@ context-guard = true
 - 文档中的命令永远不会被执行。
 - LLM 不进入 `check` 或 CI 路径，结果可复现。
 - 只有显式 `extract --llm` 才访问网络；API key 不写入 lock 或报告。
-- 近失、歧义与否定/假设语境降级为 `suspect`，不会让 CI 失败。
+- 近失、歧义和命中守卫的情况（否定/举例的句子、标题表格行、占位符形状、gitignore 里的运行时产物）都只降级为 `suspect`，不让 CI 失败；每条降级都写明理由。改法建议只在唯一候选时给。
 
 设计、精度纪律和路线图见 `docs/README.md`。

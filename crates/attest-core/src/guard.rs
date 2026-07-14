@@ -1,30 +1,30 @@
-//! 守卫层：决定一个 broken 裁决要不要降级成 suspect。
+//! 守卫层：决定一个 broken 要不要降级成 suspect。
 //!
-//! 公理 1 说误差只朝沉默，但守卫不是垃圾桶。这里只保留三类有名有姓的规则，
-//! 每类给出可解释的降级理由；针对单个仓库的特例一律进语料回归，不进代码。
+//! 公理 1 说误差只朝沉默，但守卫不是垃圾桶。这里只留几条有名有姓的规则，
+//! 每条都给得出降级理由；某个仓库特有的例外一律写进语料回归，不进代码。
 //!
-//! 作用范围是 token 所在的那一行，不是整段上下文。窗口式匹配会让前文的
-//! 一个 "when" 把后面不相干 token 的 broken 也拉下水（已在真实文档里复现过），
-//! 所以守卫只看当前行。
+//! 守卫只看 token 所在的那一行，不看整段上下文。窗口式匹配会让前文的
+//! 一个 "when" 把后面不相干 token 的红也拉下水（在真实文档里复现过），
+//! 所以范围收到当前行为止。
 
 use std::path::Path;
 
 use crate::{Finding, Namespace};
 
-/// broken 降级检查的总入口。命中返回降级理由，写进 evidence.note。
+/// broken 降级检查的总入口。命中就返回降级理由，写进 evidence.note。
 pub(crate) fn downgrade_note(finding: &Finding) -> Option<&'static str> {
     let line = finding.context.lines().last().unwrap_or("");
     if structure_guard(line) {
-        return Some("结构守卫：token 位于标题或表格行，按弱断言处理");
+        return Some("结构守卫：token 在标题或表格行里，是版式不是断言");
     }
     if context_guard(line) {
-        return Some("语境守卫：所在句在说否定、假设、示例或文件的产出与删除");
+        return Some("语境守卫：这句话在说否定、假设、举例，或文件是被生成、删除的");
     }
     if doc_class_guard(&finding.doc, finding.ns) {
-        return Some("文档类别守卫：skill 或模板类文档常指涉目标仓库而非本仓库");
+        return Some("文档类别守卫：skill 和模板类文档常常在说别的仓库");
     }
     if finding.ns == Some(Namespace::Path) && token_shape_guard(&finding.token) {
-        return Some("形状守卫：token 形如占位符或运行时产物");
+        return Some("形状守卫：token 长得像占位符或运行时产物");
     }
     None
 }

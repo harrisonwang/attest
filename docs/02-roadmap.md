@@ -50,7 +50,7 @@
 
 ## P3 · lock 与银档（第 9–12 周，有 P2 信号后）
 
-1. `claims.lock`：形状候选 + 绑定确认（纯机械档先行）。
+1. `.attest/claims.lock`：形状候选 + 绑定确认（纯机械档先行）。
 2. `attest extract`：LLM 辅助散文断言抽取（OpenAI 兼容配置，与现有项目同款），锚点必须绑定成功才落盘，`proposed` → git review → `approved`。
 3. 哈希锚点复查 + "锚点已变更"suspect 流。
 4. vouch IR 集成：IR 声明的变更面 → 定向触发相关绑定复查（增量模式的精确版）。
