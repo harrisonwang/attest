@@ -19,7 +19,7 @@ Private remotes and local-only repositories were excluded from the checked-in co
 | Public repositories represented | 15 |
 | Resolver distribution | path: 280 |
 
-The checked-in `corpus/reviewed.jsonl` contains only the 280 public, snapshot-verified cases from 15 repositories. The Rust corpus test requires every corrected token to bind and at least 80% of stale tokens to produce broken or suspect. Source locators such as `file.rs:42` or `file.sh:function()` count as detected when the file survives but the locator cannot be deterministically reconfirmed; they remain `suspect`, never `broken`.
+The checked-in `corpus/reviewed.jsonl` contains only the 280 public, snapshot-verified cases from 15 repositories. The Rust corpus test requires every corrected token to bind, a broken rate of at least 55%, and a combined broken+suspect rate of at least 80% for stale tokens. Source locators such as `file.rs:42` or `file.sh:function()` count as detected when the file survives but the locator cannot be deterministically reconfirmed; they remain `suspect`, never `broken`.
 
 ## Candidate frequency distribution
 
@@ -42,7 +42,7 @@ All non-path resolver-shaped rows were inspected as a taxonomy check; ambiguous 
 ## Gate status
 
 - **Precision gate:** satisfied for the checked-in path set by deterministic Git snapshot evidence; no heuristic-only candidate is marked reviewed.
-- **Coverage gate:** enforced in CI at the P3 target of 80% for reviewed path cases.
+- **Coverage gate:** enforced in CI on two lines for reviewed path cases: broken rate (what CI actually blocks) at 55% or higher, and broken+suspect combined at the P3 target of 80% or higher.
 - **200-case target:** satisfied (280/200) without private or synthetic cases.
 - **Source breadth:** satisfied at the documented lower bound (15 public repositories).
 - **Category analysis:** satisfied directionally by the separate digest-bound candidate set; only snapshot-proven rows enter the precision gate.

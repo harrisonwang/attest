@@ -7,7 +7,7 @@
 | Phase | Requirement | Evidence | State |
 |---|---|---|---|
 | P0 | Mining tool, public reviewed corpus, and category distribution | `tools/mine-drift.py`; 280 Git-snapshot-verified cases from 15 public repositories in `corpus/reviewed.jsonl`; 1,464 digest-bound frequency candidates from 10 deep public histories in `corpus/candidates.jsonl` | proven |
-| P0 | Coverage gate | Rust corpus test requires every corrected path to bind and at least 80% of stale paths to be broken or suspect | proven |
+| P0 | Coverage gate | Rust corpus test requires every corrected path to bind, a broken rate of at least 55%, and a combined broken+suspect rate of at least 80% for stale paths | proven |
 | P1 | Core, CLI, extraction, eight resolvers, verdicts, baseline, incremental mode, three reports | workspace sources and 52 Rust tests | proven |
 | P1 | Owned-repository compatibility | release binary scanned 30 local owned repositories: 27 clean, 3 with expected drift exit code, 0 runtime errors; privacy-preserving machine evidence in `reports/owned-repository-validation.json` | proven locally |
 | P1 | Five-repository cold start with zero false-positive broken findings | `reports/cold-start-validation.md` and matching machine report evidence | proven |
