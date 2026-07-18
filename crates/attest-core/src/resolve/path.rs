@@ -1,7 +1,7 @@
 use std::path::Path;
 
 use crate::{
-    Namespace, RepoFacts, Tier, Token,
+    Namespace, RepoFacts, Tier, Token, TokenSource,
     extract::{has_dynamic_placeholder, has_wildcard},
 };
 
@@ -41,7 +41,9 @@ pub(super) fn resolve(token: &Token, facts: &dyn RepoFacts) -> Resolution {
             alternatives: matches.into_iter().skip(1).collect(),
         };
     }
-    if !looks_like_path(candidate) {
+    // 链接目标在语法上就是文件引用，不用再靠长相判断它是不是路径；
+    // 反引号 token 什么都可能是，得先过形状门。
+    if token.source != TokenSource::LinkTarget && !looks_like_path(candidate) {
         return Resolution::NoMatch;
     }
     let candidate = candidate.trim_end_matches(['.', ',', ':', ';']);
@@ -170,15 +172,29 @@ pub(super) fn resolve(token: &Token, facts: &dyn RepoFacts) -> Resolution {
         .parent()
         .and_then(Path::to_str)
         .unwrap_or("");
+    let parentless = parent.is_empty() || parent == ".";
     if source_locator.is_none()
-        && !parent.is_empty()
-        && parent != "."
+        && !parentless
         && !facts
             .path_bases(&token.doc)
             .into_iter()
             .any(|base| facts.file_exists(&token.doc, base, parent))
     {
         return Resolution::NoMatch;
+    }
+    // SKILL.md 教 agent 去目标仓库干活，里面的根级裸文件名多半说的是
+    // "用户仓库里该有的文件"或"跑完才生成的产物"，在本仓库里毫无踪迹
+    // 不足以定罪，降成提醒。带目录的路径不受影响——skill 自带的
+    // references/ 附件缺了照样红。
+    if parentless && source_locator.is_none() && token.doc.ends_with("SKILL.md") {
+        return Resolution::NearMiss {
+            ns: Namespace::Path,
+            suggestion: None,
+            note: "SKILL.md 常在描述目标仓库或运行时产物，根级文件名在本仓库无踪迹时只提醒"
+                .to_owned(),
+            searched: vec!["doc-dir".into(), "project-root".into(), "repo-root".into()],
+            alternatives: Vec::new(),
+        };
     }
     Resolution::Broken {
         ns: Namespace::Path,

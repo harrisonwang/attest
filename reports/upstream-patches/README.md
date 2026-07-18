@@ -4,14 +4,14 @@
 
 | Repository | Snapshot | Patch |
 |---|---|---|
-| `facebook/react` | `c0c39a6b3907` | `facebook-react.patch` |
-| `oven-sh/bun` | `5098c8dada2f` | `oven-sh-bun.patch` |
+| `react/react` | `c0c39a6b3907` | `facebook-react.patch` |
+| `oven-sh/bun` | `16c557635bb3` | `oven-sh-bun.patch` |
 | `OpenHands/OpenHands` | `5f9906fbdac3` | `openhands-openhands.patch` |
-| `continuedev/continue` | `c5490d97eaa9` | `continuedev-continue.patch` |
+| `continuedev/continue` | `d0a3c0b626b5` | `continuedev-continue.patch` |
 | `vercel-labs/skills` | `cf4a3ea678b7` | `vercel-labs-skills.patch` |
-| `alirezarezvani/claude-skills` | `0241f4376557` | `alirezarezvani-claude-skills.patch` |
+| `alirezarezvani/claude-skills` | `8c4a374a443a` | `alirezarezvani-claude-skills.patch` |
 | `deanpeters/Product-Manager-Skills` | `99be43c842d3` | `deanpeters-product-manager-skills.patch` |
-| `jeremylongshore/claude-code-plugins-plus-skills` | `7ca29e06dbfa` | `jeremylongshore-claude-code-plugins-plus-skills.patch` |
+| `jeremylongshore/claude-code-plugins-plus-skills` | `2d86dfbcf3e2` | `jeremylongshore-claude-code-plugins-plus-skills.patch` |
 | `NVIDIA/skills` | `9559272b38d9` | `nvidia-skills.patch` |
 | `OpenHands/docs` | `a7d418214914` | `openhands-docs.patch` |
 

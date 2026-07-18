@@ -49,8 +49,10 @@ fn context_guard(line: &str) -> bool {
         "禁止",
         "避免",
         " not ",
+        "(not ",
         "n't",
         "never ",
+        "no ",
         "do not",
         "must not",
         "not yet",
@@ -81,6 +83,25 @@ fn context_guard(line: &str) -> bool {
         "such as",
         " like ",
         "placeholder",
+        // "选适用的那个"：列举备选，命中哪个用哪个，缺席的不是漂移。
+        "appropriate",
+        "适用",
+    ];
+    const ELSEWHERE: &[&str] = &[
+        // 指涉物在别处或已被设计掉：git 分支名长得像路径但不是路径；
+        // "upstream" 说的是上游仓库的文件；"folded into" 这类替代句式
+        // 明说这个东西在本仓库里被别的东西吸收了，缺席正是文档的本意。
+        "branch ",
+        "分支",
+        "upstream",
+        "上游",
+        "folded into",
+        "merged into",
+        "replaced by",
+        "superseded",
+        "handled by",
+        "已并入",
+        "已被替代",
     ];
     const PRODUCED: &[&str] = &[
         // 产出与删改动作：文件是流程的结果，不是现存事实。
@@ -92,15 +113,19 @@ fn context_guard(line: &str) -> bool {
         "删除",
         "移除",
         "重命名",
+        "序列化",
         "create",
         "generate",
         "write ",
+        "writes",
         "written ",
         "output ",
         "save",
         "delete",
         "remove",
         "rename",
+        "serialize",
+        "emit",
         "will be",
         "cloned into",
     ];
@@ -109,7 +134,7 @@ fn context_guard(line: &str) -> bool {
     let masked = mask_inline_code(line);
     let lower = masked.to_lowercase();
     let plain = lower.replace(['*', '_'], "");
-    [NEGATION, TENTATIVE, EXAMPLE, PRODUCED]
+    [NEGATION, TENTATIVE, EXAMPLE, ELSEWHERE, PRODUCED]
         .iter()
         .flat_map(|group| group.iter())
         .any(|pattern| lower.contains(pattern) || plain.contains(pattern))
@@ -198,6 +223,22 @@ fn placeholder_path(value: &str) -> bool {
         || lower
             .split('/')
             .any(|component| matches!(component, "foo" | "bar" | "example" | "sample"))
+        || value.split('/').any(template_name_component)
+}
+
+/// 命名规范里的元变量：`ComponentName.tsx`、`usePageName.ts`、`Component.test.tsx`。
+/// 驼峰且以 Name 收尾的词干，或者干脆叫 Component，是在教命名格式，不是指真文件。
+fn template_name_component(component: &str) -> bool {
+    let stem = component.split('.').next().unwrap_or(component);
+    if stem == "Component" || stem == "ComponentName" {
+        return true;
+    }
+    stem.len() > 4
+        && stem.ends_with("Name")
+        && stem[..stem.len() - 4]
+            .chars()
+            .last()
+            .is_some_and(|character| character.is_ascii_lowercase())
 }
 
 #[cfg(test)]

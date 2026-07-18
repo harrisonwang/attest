@@ -67,6 +67,8 @@ struct RawResolvers {
     #[serde(rename = "config-key")]
     config_key: Option<bool>,
     symbol: Option<bool>,
+    #[serde(rename = "skill-meta")]
+    skill_meta: Option<bool>,
 }
 
 #[derive(Debug, Default, Deserialize)]
@@ -114,6 +116,7 @@ impl Config {
             (Namespace::Env, raw.resolvers.env),
             (Namespace::ConfigKey, raw.resolvers.config_key),
             (Namespace::Symbol, raw.resolvers.symbol),
+            (Namespace::SkillMeta, raw.resolvers.skill_meta),
         ];
         config.enabled_resolvers = switches
             .into_iter()
@@ -155,6 +158,7 @@ fn all_resolvers() -> Vec<Namespace> {
         Namespace::Env,
         Namespace::ConfigKey,
         Namespace::Symbol,
+        Namespace::SkillMeta,
     ]
 }
 

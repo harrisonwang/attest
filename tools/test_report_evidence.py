@@ -89,67 +89,50 @@ class ReportEvidenceTests(unittest.TestCase):
         self.assertEqual(validation["binary"]["version"], "attest 0.1.0")
         self.assertEqual(len(validation["binary"]["sha256"]), 64)
 
-    def test_gold_queue_matches_current_scan_snapshots(self) -> None:
-        expected = {
-            "facebook/react": "c0c39a6b3907",
-            "oven-sh/bun": "5098c8dada2f",
-            "OpenHands/OpenHands": "5f9906fbdac3",
-            "continuedev/continue": "c5490d97eaa9",
-            "vercel-labs/skills": "cf4a3ea678b7",
-            "alirezarezvani/claude-skills": "0241f4376557",
-            "deanpeters/Product-Manager-Skills": "99be43c842d3",
-            "jeremylongshore/claude-code-plugins-plus-skills": "7ca29e06dbfa",
-            "NVIDIA/skills": "9559272b38d9",
-            "OpenHands/docs": "a7d418214914",
-        }
+    # 提交 PR 时上游 head 已经离开扫描快照，金档改钉在各自的提交基线上，
+    # 所以 submissions.json 是唯一权威；扫描报告只用来核对成员资格。
+    # react 在扫描后迁移了组织，按别名对回扫描时的名字。
+    SCAN_ALIASES = {"react/react": "facebook/react"}
+
+    def test_gold_queue_rows_match_submission_bases(self) -> None:
+        submissions = json.loads(
+            (ROOT / "reports/upstream-submissions.json").read_text(encoding="utf-8")
+        )["submissions"]
         scan = json.loads((ROOT / "reports/public-scan.json").read_text(encoding="utf-8"))
-        repositories = {row["repository"]: row for row in scan["repositories"]}
+        scanned = {row["repository"] for row in scan["repositories"]}
         reviewed = (ROOT / "reports/reviewed-findings.md").read_text(encoding="utf-8")
 
-        for repository, snapshot in expected.items():
-            self.assertTrue(repositories[repository]["commit"].startswith(snapshot))
+        self.assertEqual(len(submissions), 10)
+        for submission in submissions:
+            repository = submission["repository"]
+            snapshot = submission["snapshot"][:12]
+            self.assertIn(self.SCAN_ALIASES.get(repository, repository), scanned)
             self.assertIn(f"| `{repository}` | `{snapshot}` |", reviewed)
+            self.assertTrue(
+                submission["pull_request"].startswith(
+                    f"https://github.com/{repository}/pull/"
+                )
+            )
 
     def test_gold_queue_has_one_exported_patch_per_repository(self) -> None:
-        expected = {
-            "facebook-react.patch": ("facebook/react", "c0c39a6b3907"),
-            "oven-sh-bun.patch": ("oven-sh/bun", "5098c8dada2f"),
-            "openhands-openhands.patch": ("OpenHands/OpenHands", "5f9906fbdac3"),
-            "continuedev-continue.patch": ("continuedev/continue", "c5490d97eaa9"),
-            "vercel-labs-skills.patch": ("vercel-labs/skills", "cf4a3ea678b7"),
-            "alirezarezvani-claude-skills.patch": (
-                "alirezarezvani/claude-skills",
-                "0241f4376557",
-            ),
-            "deanpeters-product-manager-skills.patch": (
-                "deanpeters/Product-Manager-Skills",
-                "99be43c842d3",
-            ),
-            "jeremylongshore-claude-code-plugins-plus-skills.patch": (
-                "jeremylongshore/claude-code-plugins-plus-skills",
-                "7ca29e06dbfa",
-            ),
-            "nvidia-skills.patch": ("NVIDIA/skills", "9559272b38d9"),
-            "openhands-docs.patch": ("OpenHands/docs", "a7d418214914"),
-        }
         patch_dir = ROOT / "reports/upstream-patches"
         manifest = (patch_dir / "README.md").read_text(encoding="utf-8")
         patches = {path.name for path in patch_dir.glob("*.patch")}
         submissions = json.loads(
             (ROOT / "reports/upstream-submissions.json").read_text(encoding="utf-8")
         )["submissions"]
-        submission_by_repository = {
-            item["repository"]: item for item in submissions
-        }
 
-        self.assertEqual(patches, set(expected))
-        self.assertEqual(set(submission_by_repository), {item[0] for item in expected.values()})
-        for name, (repository, snapshot) in expected.items():
+        self.assertEqual(len({item["repository"] for item in submissions}), len(submissions))
+        self.assertEqual(
+            patches, {Path(item["patch"]).name for item in submissions}
+        )
+        for submission in submissions:
+            repository = submission["repository"]
+            snapshot = submission["snapshot"][:12]
+            name = Path(submission["patch"]).name
             content = (patch_dir / name).read_text(encoding="utf-8")
-            submission = submission_by_repository[repository]
             self.assertIn("diff --git a/", content)
             self.assertIn(f"| `{repository}` | `{snapshot}` | `{name}` |", manifest)
-            self.assertTrue(submission["snapshot"].startswith(snapshot))
             self.assertEqual(submission["patch"], f"reports/upstream-patches/{name}")
             self.assertIn("attest", submission["body"])
 

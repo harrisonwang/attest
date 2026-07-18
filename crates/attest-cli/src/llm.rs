@@ -234,6 +234,8 @@ pub(crate) fn validate_anchor(
             let hit = facts.config_key(doc, None, referent)?;
             hash_for(&hit.path)
         }
+        // frontmatter 校验不产生锚点，模型提议了也不收。
+        Namespace::SkillMeta => return None,
     };
     Some(Anchor {
         ns: namespace,

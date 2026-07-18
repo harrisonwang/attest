@@ -1,13 +1,23 @@
 diff --git a/extensions/cli/AGENTS.md b/extensions/cli/AGENTS.md
-index a64377e..7ba7aac 100644
+index a64377e..05740c1 100644
 --- a/extensions/cli/AGENTS.md
 +++ b/extensions/cli/AGENTS.md
-@@ -48,7 +48,7 @@ This is a CLI tool for Continue Dev that provides an interactive AI-assisted dev
-    - Diff viewing
-    - Exit tool (headless mode only)
- 
+@@ -21 +20,0 @@ This is a CLI tool for Continue Dev that provides an interactive AI-assisted dev
+-
+@@ -26,4 +25,3 @@ This is a CLI tool for Continue Dev that provides an interactive AI-assisted dev
+-2. **Authentication** (`src/auth/`): WorkOS-based authentication system
+-
+-   - `ensureAuth.ts`: Handles authentication flow
+-   - `workos.ts`: WorkOS configuration and token management
++2. **Authentication** (`src/services/AuthService.ts`): Local authentication state after Hub authentication was removed
++   - `src/services/AuthService.ts`: Reports unauthenticated state and keeps login unavailable
++   - `src/auth/workos.ts`: No-op compatibility helpers retained for existing imports
+@@ -32 +29,0 @@ This is a CLI tool for Continue Dev that provides an interactive AI-assisted dev
+-
+@@ -38 +34,0 @@ This is a CLI tool for Continue Dev that provides an interactive AI-assisted dev
+-
+@@ -44 +39,0 @@ This is a CLI tool for Continue Dev that provides an interactive AI-assisted dev
+-
+@@ -51 +46 @@ This is a CLI tool for Continue Dev that provides an interactive AI-assisted dev
 -6. **MCP Integration** (`src/mcp.ts`): Model Context Protocol service for extended tool capabilities
 +6. **MCP Integration** (`src/services/MCPService.ts`): Model Context Protocol service, with transport and authentication helpers in `src/services/mcpTransports.ts` and `src/services/mcpUtils.ts`
- 
- 7. **Hooks System** (`src/hooks/`): Event interception system for extending CLI behavior
-    - `HookService.ts`: Service container integration, loads config and fires events

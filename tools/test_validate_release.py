@@ -1,6 +1,7 @@
 import json
 import shutil
 import tempfile
+import tomllib
 import unittest
 from pathlib import Path
 
@@ -10,15 +11,20 @@ from validate_release import validate_release
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def source_version() -> str:
+    with open(ROOT / "Cargo.toml", "rb") as handle:
+        return tomllib.load(handle)["workspace"]["package"]["version"]
+
+
 class ValidateReleaseTests(unittest.TestCase):
     def test_current_release_metadata_is_consistent(self) -> None:
-        self.assertEqual(validate_release(ROOT, "v0.1.0"), [])
+        self.assertEqual(validate_release(ROOT, f"v{source_version()}"), [])
 
     def test_release_tag_must_match_source_version(self) -> None:
-        errors = validate_release(ROOT, "v0.2.0")
+        errors = validate_release(ROOT, "v99.0.0")
 
         self.assertIn(
-            "release tag v0.2.0 does not match source version v0.1.0",
+            f"release tag v99.0.0 does not match source version v{source_version()}",
             errors,
         )
 

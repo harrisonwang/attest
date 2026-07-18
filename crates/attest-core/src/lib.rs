@@ -5,6 +5,7 @@ mod glob;
 mod guard;
 mod model;
 mod resolve;
+mod skill;
 
 pub use engine::{CheckOptions, check_claims, check_document};
 pub use extract::{extract_tokens, parse_command_line};

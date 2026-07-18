@@ -17,6 +17,22 @@ pub fn extract_tokens(doc: &str, markdown: &str) -> Vec<Token> {
                 );
                 heredoc_delimiter = None;
             }
+            Event::Start(Tag::Link(_, destination, _) | Tag::Image(_, destination, _)) => {
+                let Some(target) = link_destination(&destination) else {
+                    continue;
+                };
+                let (line, column_start, context) = location(markdown, &line_starts, range.start);
+                tokens.push(Token {
+                    column_end: column_start + target.chars().count(),
+                    text: target,
+                    doc: doc.to_owned(),
+                    line,
+                    column_start,
+                    context,
+                    source: TokenSource::LinkTarget,
+                    command: None,
+                });
+            }
             Event::End(Tag::CodeBlock(_)) => {
                 shell_fence = false;
                 heredoc_delimiter = None;
@@ -74,6 +90,38 @@ pub fn extract_tokens(doc: &str, markdown: &str) -> Vec<Token> {
         }
     }
     tokens
+}
+
+/// 从链接目标里筛出本仓库的文件引用。带 scheme 的是外部世界，`#` 开头的是
+/// 页内跳转，`/` 和 `~` 开头的不在仓库相对语义里——这些都不是本仓库的断言。
+/// 剩下的去掉锚点和查询串，才是能拿去文件树对质的路径。
+fn link_destination(destination: &str) -> Option<String> {
+    let destination = destination.trim();
+    if destination.is_empty() || destination.starts_with('#') || destination.starts_with("//") {
+        return None;
+    }
+    if let Some((scheme, _)) = destination.split_once(':')
+        && !scheme.is_empty()
+        && scheme
+            .chars()
+            .next()
+            .is_some_and(|c| c.is_ascii_alphabetic())
+        && scheme
+            .chars()
+            .all(|c| c.is_ascii_alphanumeric() || "+.-".contains(c))
+    {
+        return None;
+    }
+    let path = destination
+        .split(['#', '?'])
+        .next()
+        .unwrap_or("")
+        .trim()
+        .trim_start_matches("./");
+    if path.is_empty() || path.starts_with('/') || path.starts_with('~') {
+        return None;
+    }
+    Some(path.to_owned())
 }
 
 fn inline_command(raw: &str) -> Option<CommandToken> {
@@ -157,7 +205,8 @@ fn is_env_assignment(word: &str) -> bool {
 }
 
 pub(crate) fn has_dynamic_placeholder(value: &str) -> bool {
-    value.contains('<')
+    value.contains("...")
+        || value.contains('<')
         || value.contains('>')
         || value.contains('{')
         || value.contains('}')
@@ -296,6 +345,26 @@ mod tests {
         assert_eq!(tokens[0].line, 5);
         assert_eq!(tokens[1].text, "git status");
         assert_eq!(tokens[1].line, 7);
+    }
+
+    #[test]
+    fn link_targets_keep_local_paths_and_drop_the_external_world() {
+        let markdown = "先读 [架构](docs/arch.md#设计)，配图在 ![图](./assets/a.png)。\n\n外部的 [官网](https://example.com)、[邮件](mailto:a@b.c)、页内的 [跳转](#安装) 和绝对路径 [根](/etc/hosts) 都不算。\n";
+        let tokens = extract_tokens("AGENTS.md", markdown);
+
+        assert_eq!(
+            tokens
+                .iter()
+                .map(|token| token.text.as_str())
+                .collect::<Vec<_>>(),
+            ["docs/arch.md", "assets/a.png"]
+        );
+        assert!(
+            tokens
+                .iter()
+                .all(|token| token.source == TokenSource::LinkTarget)
+        );
+        assert_eq!(tokens[0].line, 1);
     }
 
     #[test]

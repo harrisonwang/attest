@@ -29,3 +29,20 @@
 {"markdown": "Run `git frobnicate` before pushing.", "expect": [], "why": "表内工具的未知子命令保持沉默，不能冒充核实过"}
 {"markdown": "Install the action from `harrisonwang/attest-action` on GitHub.", "paths": ["distribution/attest-action/action.yml"], "expect": [], "why": "顶层目录不存在的两段名（仓库缩写）不做迁移猜测"}
 {"markdown": "See `src/shell/`.", "paths": ["src/runtime/shell/mod.rs", "src/legacy/shell/mod.rs"], "expect": ["suspect"], "why": "多个同名候选只列出、不下结论"}
+{"markdown": "先读 [架构说明](docs/arch.md)，路线在 [路线图](docs/roadmap.md)。", "paths": ["docs/arch.md"], "expect": ["verified", "broken"], "why": "链接目标是本仓库文件引用：在就核实，父目录在而文件缺就是红"}
+{"markdown": "官网见 [example](https://example.com)，问题发 [邮件](mailto:a@b.c)，页内跳 [安装](#install)。", "expect": [], "why": "带 scheme 的、页内锚点的链接指向外部世界，不是对仓库的断言"}
+{"markdown": "| 文档 | [说明](docs/gone.md) |", "paths": ["docs/arch.md"], "expect": ["suspect"], "why": "表格行里的链接是版式，结构守卫照样降级"}
+{"markdown": "比如把总结写到 [笔记](docs/notes.md)。", "paths": ["docs/arch.md"], "expect": ["suspect"], "why": "举例口吻对链接同样生效，语境守卫降级"}
+{"markdown": "RIPEMD160 lives in `crypto/` (not `decrepit/`) after the upstream move.", "paths": ["crypto/digest.cc"], "expect": ["verified", "suspect"], "why": "括号里的 (not …) 也是否定，decrepit/ 的缺席正是句子要说的"}
+{"markdown": "Branch names must start with `claude/` for CI to run.", "expect": ["suspect"], "why": "git 分支名前缀长得像目录，line 里有 branch 就不当路径断言"}
+{"markdown": "Upstream's `gating.rs` is folded into `program.rs` during the port.", "paths": ["program.rs"], "expect": ["suspect", "verified"], "why": "upstream 指上游仓库的文件，folded into 说它在本仓库被吸收了"}
+{"markdown": "`suppression.rs` is handled by the lexer instead.", "paths": ["src/lexer.rs"], "expect": ["suspect"], "why": "被替代句式：文件按设计不存在，缺席不是漂移"}
+{"doc": "skills/ai-seo/SKILL.md", "markdown": "---\nname: demo\ndescription: d\n---\nThey parse `llms.txt` and structured pricing pages when present.", "expect": ["suspect", "verified"], "why": "SKILL.md 的根级裸文件名多半指目标仓库或运行产物，本仓库无踪迹只提醒"}
+{"doc": "skills/plan/SKILL.md", "markdown": "---\nname: demo\ndescription: d\n---\nRead `references/methodology.md` first.", "paths": ["references/other.md"], "expect": ["broken", "verified"], "why": "skill 自带的附件带着存在的父目录，缺了照样红——降级只给无踪迹的裸名"}
+{"markdown": "Update the appropriate lockfile (`package-lock.json`, `pnpm-lock.yaml`, `yarn.lock`).", "paths": ["pnpm-lock.yaml"], "expect": ["suspect", "verified", "suspect"], "why": "appropriate 是列举备选：命中哪个用哪个，缺席的不是漂移"}
+{"markdown": "Each run writes `summary.json` and `summary.md` artifacts.", "expect": ["suspect", "suspect"], "why": "writes 是产出动词，文件跑完才存在"}
+{"markdown": "Serialized to `state.json` via Pydantic.", "expect": ["suspect"], "why": "serialize 一族说的是产出，不是现存事实"}
+{"markdown": "- Core/tests: no deep plugin internals (`onboard.js`).", "expect": ["suspect"], "why": "no 开头的否定列举，句子明说别碰"}
+{"markdown": "Add a `usePageName.ts` hook plus `Component.test.tsx` beside `Component.tsx`.", "expect": ["suspect", "suspect", "suspect"], "why": "驼峰 Name 结尾和裸 Component 词干是命名规范的元变量，不是真文件"}
+{"doc": "skills/qa/SKILL.md", "markdown": "---\nname: demo\ndescription: d\n---\npoint prompts at `repo/...` inside the seeded workspace", "expect": ["verified"], "why": "ASCII 三点省略号和中文省略号一样是占位符"}
+{"markdown": "Build with QA enabled (emits `qa-runtime.js` and `dist/extensions/`).", "expect": ["suspect"], "why": "emit 一族说的是构建产物，跑完 build 才存在"}

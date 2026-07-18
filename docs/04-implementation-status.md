@@ -1,36 +1,58 @@
-# attest — 实现状态
+# attest — 实现进度
 
-> 更新：2026-07-14
+> 更新：2026-07-18
 
-## 已实现
+## 已经做完了
 
-- Rust workspace：`attest-core` 保持 I/O-behind-trait，`attest-cli` 按职责分成 check / extract / llm / vouch / render / store / surface / prose 等模块，main 只做参数解析和分发。
-- CommonMark 提取：inline code 与显式 bash/sh/shell/zsh/console fence，共用命令解析器；支持环境前缀、注释、续行、heredoc 跳过，以及路径/script/pkg 的 `*` / `?` 确定性通配绑定（无匹配时静默）。已知盲区：无语言标注的 fence 不产 token，这类内容里的漂移工具看不见。
-- v1 resolver：path、script、pkg、cmd、go-import、env、config-key、symbol；工具子命令表 vendored 为 JSON 数据。表内工具的未知子命令保持沉默，不算 verified；owner/repo 形状的仓库缩写不做迁移猜测。
-- 事实采集：Git 文件树尊重 ignore；符号/env 查询首次调用建一遍词表索引，之后查表；文档引用命中 .gitignore 的路径走 `git check-ignore`（带缓存）按运行时产物降级；config-key 仅绑定上下文点名或 doc/project 邻近配置，避免无关配置假绿。
-- monorepo scope：doc-dir → project-root → repo-root，支持 `attest.toml` glob 钉死作用域；路径 glob 在 core 里只有一份实现，CLI 与测试替身共用。
-- verdict：verified / broken / suspect / silent。broken 报出前过四道降级守卫（结构 / 语境 / 文档类别 / 形状），只看 token 所在行、先遮掉行内代码再匹配，每道守卫的降级理由写进 evidence.note；守卫行为由 `corpus/guard-cases.jsonl` 带标注语料逐条回归，仓库特有的例外只进语料不进代码。改法建议只在唯一候选时给出，多候选只列在 evidence 里。
-- CLI：`check`、`baseline update`、`extract`，支持 TTY / JSON / GitHub annotations、`--since`、`--vouch-ir`、`--strict`。
-- brownfield 棘轮：`.attest/baseline.json` 按 `(doc, token, ns)` 稳定匹配。
-- 银档：严格 YAML `.attest/claims.lock`、proposed/approved、确定性锚点、SHA-256 内容锚定；来源文档或锚点删除报 broken，内容变化只报 suspect。
-- 作者时点 LLM 抽取：OpenAI-compatible Responses API、严格 Structured Outputs、模型/端点可配置；全部锚点确定性绑定成功才生成 proposed claim。
-- vouch IR 定向模式：读取 Commit IR 的文件与 anchor 变更面，只复查直接变更或提及相关锚点的文档及其 lock claims。
-- 分发资产：npm 零安装包装器与六平台目标清单、composite GitHub Action 及独立仓库导出包、六平台 release workflow、版本/tag fail-closed 预检、npm OIDC trusted publishing、Homebrew/Scoop 模板与自动 dispatch、`attest` / `attest-fix` agent skills、SessionStart hook 配方。
-- 语料：公开 Git 快照公证案例与 CI corpus gate；挖矿工具支持批量仓库发现、隐私过滤和 reviewed-only 输出。
-- P0 已收录 280 条、覆盖 15 个公开仓库的 Git 快照确认案例，满足 200+ 案例和 15–20 来源仓库门槛；另有 10 个公开深历史仓库的 1,464 条 digest-bound 机械候选用于 resolver 频率分析，候选不混入精度金档。未使用私有或合成数据填数。检出门禁分两条线：broken 率（CI 真会拦住的）≥55%，broken+suspect 总检出 ≥80%；当前实测 broken 58.6%、总检出 85.0%。
-- P1 冷启动验收：五个未进入语料和 top-50 launch 扫描的公开仓库共 9 条 broken 已逐条复核，金档误报为 0；证据见 `reports/cold-start-validation.md`。
-- P1 自有仓库兼容性：release binary 扫描同级 30 个 Git 仓库，27 个 clean、3 个按产品语义返回 drift、0 个运行错误；聚合证据不记录私有仓库身份，见 `reports/owned-repository-validation.md`。
-- P2 扫描：按 GitHub stars 排序并成功扫描 50/50 个公开 AGENTS/CLAUDE 仓库，共覆盖 330 份文档和 16,310 个 token；结构化报告、launch 草稿和 10 个已通过 `git apply --check` 的金档上游补丁均已落盘。
-- P3 修复闭环：`/attest-fix` skill、临时 Git 仓库红→绿夹具、asciinema 事件流与 65 秒 H.264 demo 已落盘；夹具和录制证据均进入 CI。
-- 工具表社区通道：第三方命令保持纯 JSON 数据，贡献规范要求官方证据、排序、golden test 与完整门禁。
+attest-core 和 attest-cli 搭好了，Rust workspace。core 是纯逻辑层，不碰文件系统不碰网络。cli 按功能分模块——check、extract、llm、vouch、render、store、surface、prose，main 只负责解析参数和分发。
 
-## 尚需外部执行
+Markdown 提取这块，inline code 和显式标了 bash、sh、shell、zsh、console 的围栏块都能抽，链接和图片的目标也抽——带 scheme 的、页内锚点、绝对路径跳过，剩下的按本仓库文件引用处理，且只走路径检查，不会被脚本、命令这些角度错绑。命令解析支持环境变量前缀、注释、续行拼接、heredoc 跳过。路径、脚本、包名的 `*` 和 `?` 通配符按确定性规则匹配，匹配不到不出声。没标语言的围栏块不产 token，这是刻意取舍——ASCII 大纲和目录树会混进来——代价是这类内容里的漂移工具看不见。
 
-- P2 的 npm/GitHub Release 发布、将 `distribution/attest-action/` 推送为独立仓库、10 个上游 PR 提交以及 HN/X/中文社区发帖仍需要真实对外执行；GitHub CLI 与 npm 均已认证为 `harrisonwang`，`npm publish --dry-run --access public` 已通过，但主仓库/Action 仓库尚未创建，npm 包也尚未公开。精确引导见 `docs/release.md`。
-- P3 demo 已真实录制；第二波发布仍属于对外传播执行。
-- P4 项目按需求牵引，不算 v0.1 门禁：tree-sitter、路由 resolver、MCP、VS Code 与 introspective 执行档。
+八个检查模块全部到位：路径、脚本、包名、命令、Go import、环境变量、配置键、代码符号。工具子命令表内置了 JSON 数据。表里没有的工具子命令保持沉默，不算 verified。`owner/repo` 这种仓库缩写不做迁移猜测。
 
-逐项证据与未完成判定见 `reports/completion-audit.md`。
+token 之外还有一个文档级校验：SKILL.md 的 frontmatter。块缺失、YAML 解析失败、name 或 description 不在或为空算 broken；形状不合规范只提 suspect；name 还是占位符的按模板跳过，references 和 templates 目录同理。开头 `---` 带尾随空白的真实文件也认——这是 2026-07-18 冷启动复核在一个六千文档的 skill 聚合仓库上逮出来的形状，已进回归。同一轮复核在 bun 主干上确认了三条真漂移、七条守卫盲区，盲区全部按"普遍语言现象"标准补进语境守卫（括号里的否定、分支名前缀、upstream 与替代句式），案例钉进 `corpus/guard-cases.jsonl`。
+
+2026-07-18 又拿 AutoGPT、openclaw、marketingskills、agents.md 四个本地仓库做了一轮复核，暴露出契约文档的最大误报类：文档描述"目标仓库的文件"和"运行时产物"。按人工逐条定性后收进三处：SKILL.md 的根级裸文件名无本地踪迹时降为提醒（带目录的附件引用不受影响，bun 的三条真漂移回归确认还在咬）；语境守卫补产出动词（writes、serialize、emit）、否定列举（no 开头）、备选列举（appropriate）；形状守卫补命名元变量（驼峰 Name 收尾、裸 Component 词干）和 ASCII 省略号。四仓库 broken 从 53 降到 6，剩余里 2 条是真问题（AutoGPT 的 coverage-fixture 已搬家、openclaw 的 lobster SKILL.md 没有 frontmatter），其余是"已提交目录里的未 ignore 运行产物"这类守不住的残留，走 baseline 记账。全部形状钉进守卫语料。
+
+文件树采集走 `git ls-files`，尊重 .gitignore。非 git 目录退化成受限的目录遍历。符号和环境变量的搜索首次调用时建好词表索引，之后全查表。文档引用了被 .gitignore 排除的路径，走 `git check-ignore` 查一遍（有缓存），按运行时产物处理——不报 broken 只提醒。
+
+monorepo 的路径查找按文档自身目录、项目根、仓库根的优先级来，可以在 attest.toml 里用 glob 钉死。路径 glob 在 core 里只有一份实现，CLI 和测试替身共用，不会出现测试和生产语义不同的问题。
+
+裁决结果分四级：verified 对上、broken 对不上、suspect 拿不准、silent 不出声。broken 报出前要过四道守卫——结构、语境、文档类别、形状。守卫只看 token 所在的那一行，先遮掉行内代码再匹配。每条降级的理由写在报告里。守卫行为由 `corpus/guard-cases.jsonl` 里的标注语料逐条回归，某个仓库特有的例外只进语料文件不进代码。改法建议只在唯一候选的时候给，多个候选只列出来供人判断。
+
+命令行支持三个子命令：check、baseline update、extract。输出格式有终端 TTY、JSON、GitHub annotations 三种。支持 `--since` 增量检查、`--vouch-ir` 定向模式、`--strict` 严格模式。
+
+存量项目的基线机制做好了。`.attest/baseline.json` 按文档名、token 文本、检查类型稳定匹配，不按行号。修一条少一条，`baseline update` 收紧。
+
+claims.lock 做完了。严格 YAML 格式，支持 proposed 和 approved 两种状态。确定性锚点用 SHA-256 做内容哈希。来源文档或锚点删了报 broken，内容变了只报 suspect。lock 文件用严格 schema 校验，未知字段直接拒绝。
+
+作者时点的 LLM 抽取也做了。走 OpenAI 兼容的 Responses API，严格 Structured Outputs，模型和端点可配。所有锚点必须确定性绑定成功才生成 proposed claim。
+
+vouch IR 的定向模式——读了 Commit IR 之后只查直接变更相关的文档和 lock claims。
+
+分发资产就绪了。npm 零安装包装器和六平台构建清单。composite GitHub Action 和独立仓库导出包。六平台 release workflow，版本和 tag 的 fail-closed 预检。npm OIDC trusted publishing、Homebrew 和 Scoop 模板和自动 dispatch。`/attest` 和 `/attest-fix` 两个 agent skill，加上 SessionStart hook 配方。
+
+语料方面，P0 阶段收了 280 条案例，覆盖 15 个公开仓库，Git 快照确认过的，满足 200 条和 15 到 20 个来源仓库的原始目标。另外 10 个公开的深历史仓库挖出 1,464 条摘要绑定的机械候选，用来做检查模块频率分析，候选不混入精度金档。没有用私有仓库或合成数据填数。检出率双线门禁：broken 率目标 ≥55%、总检出 ≥80%。当前实测 broken 58.6%，总检出 85.0%。
+
+冷启动验收：五个没进过语料也没进过 top-50 扫描的公开仓库，共 9 条 broken 逐条复核过，金档误报为零。证据在 `reports/cold-start-validation.md`。
+
+自有仓库兼容性：release binary 扫了同级 30 个 Git 仓库，27 个 clean、3 个按产品语义报了 drift、0 个运行错误。聚合证据不记录私有仓库身份，见 `reports/owned-repository-validation.md`。
+
+公开仓库扫描：按 GitHub stars 排序，成功扫完了 50 个有 AGENTS 或 CLAUDE 文档的公开仓库，覆盖 330 份文档和 16,310 个 token。结构化报告、launch 草稿和 10 个已经通过 `git apply --check` 的高确认度补丁都落盘了。
+
+修复闭环 demo：`/attest-fix` skill、临时 Git 仓库的红到绿夹具、asciinema 事件流和 65 秒 H.264 视频都做好了。夹具和录制证据进了 CI。
+
+工具表社区通道：第三方命令保持纯 JSON 数据，贡献规范要求给出官方证据、字典序排列、golden test 和完整的门禁。
+
+## 还需要在外部做的事情
+
+npm 和 GitHub Release 的正式发布、把 `distribution/attest-action/` 推成独立仓库、10 个上游 PR 提交、以及 HN、X、中文社区的发布——这些都还需要真实的对外执行。GitHub CLI 和 npm 都已经认证为 `harrisonwang` 了，`npm publish --dry-run --access public` 也跑通了，但主仓库和 Action 仓库还没创建，npm 包还没公开。具体步骤看 `docs/release.md`。
+
+修复闭环的 demo 视频已经真实录制好了，第二波传播属于对外执行。
+
+远期的事情按真实需求牵引，不卡 v0.1 的发布：tree-sitter 符号搜索、路由检查模块、MCP server、VS Code 插件、introspective 执行档。
+
+逐项的证据和未完成的判定在 `reports/completion-audit.md` 里。
 
 ## 验收命令
 

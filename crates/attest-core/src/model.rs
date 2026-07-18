@@ -5,6 +5,9 @@ use serde::{Deserialize, Serialize};
 pub enum TokenSource {
     InlineCode,
     ShellFence,
+    /// Markdown 链接或图片的目标。链接天然只能指向文件，所以这类 token
+    /// 只走路径检查，不参与脚本、命令等其他角度的绑定尝试。
+    LinkTarget,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -39,6 +42,9 @@ pub enum Namespace {
     Env,
     ConfigKey,
     Symbol,
+    /// SKILL.md 的 frontmatter 元数据。元数据写坏了 skill 会静默加载失败，
+    /// 对 agent 来说和死路径是同一类伤害。
+    SkillMeta,
 }
 
 impl Namespace {
@@ -52,6 +58,7 @@ impl Namespace {
             Self::Env => "env",
             Self::ConfigKey => "config-key",
             Self::Symbol => "symbol",
+            Self::SkillMeta => "skill-meta",
         }
     }
 }

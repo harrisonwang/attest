@@ -2,10 +2,11 @@ use std::collections::HashSet;
 
 use crate::{
     Anchor, BaselineEntry, BinKnowledge, ClaimLock, ClaimStatus, Finding, Namespace, RepoFacts,
-    Tier, Token, Verdict,
+    Tier, Token, TokenSource, Verdict,
     extract::extract_tokens,
     guard,
     resolve::{Resolution, evidence_for, resolve},
+    skill,
 };
 
 #[derive(Debug, Clone)]
@@ -149,6 +150,8 @@ fn bind_claim_anchor(
             let hash = facts.content_hash(doc, crate::Base::RepoRoot, &hit.path);
             (format!("{}:{}", hit.path, hit.line), hash)
         }),
+        // frontmatter 校验是文档级检查，不产生可锁定的锚点。
+        Namespace::SkillMeta => None,
     }
 }
 
@@ -173,6 +176,7 @@ impl Default for CheckOptions {
                 Namespace::Env,
                 Namespace::ConfigKey,
                 Namespace::Symbol,
+                Namespace::SkillMeta,
             ],
             baseline: HashSet::new(),
         }
@@ -185,11 +189,21 @@ pub fn check_document(
     facts: &dyn RepoFacts,
     options: &CheckOptions,
 ) -> Vec<Finding> {
-    extract_tokens(doc, markdown)
+    let mut findings: Vec<Finding> = extract_tokens(doc, markdown)
         .into_iter()
         .enumerate()
         .filter_map(|(index, token)| {
-            let resolution = resolve(&token, facts, &options.enabled_resolvers);
+            // 链接目标只能是文件，别的角度试了只会绑错。
+            let enabled: &[Namespace] = if token.source == TokenSource::LinkTarget {
+                if options.enabled_resolvers.contains(&Namespace::Path) {
+                    &[Namespace::Path]
+                } else {
+                    &[]
+                }
+            } else {
+                &options.enabled_resolvers
+            };
+            let resolution = resolve(&token, facts, enabled);
             let mut finding = finding_from(index + 1, token, resolution);
             if finding.verdict == Verdict::Broken
                 && options.context_guard
@@ -198,14 +212,23 @@ pub fn check_document(
                 finding.verdict = Verdict::Suspect;
                 finding.evidence.note = Some(note.into());
             }
-            if finding.verdict == Verdict::Broken {
-                finding.baseline = finding
-                    .baseline_key()
-                    .is_some_and(|entry| options.baseline.contains(&entry));
-            }
             (options.verbose || finding.verdict != Verdict::Silent).then_some(finding)
         })
-        .collect()
+        .collect();
+    if options.enabled_resolvers.contains(&Namespace::SkillMeta) && skill::applies(doc) {
+        // frontmatter 的 note 里常有"生成""创建"这类词，语境守卫会误判，
+        // 所以 skill 校验不过守卫，broken 的判定本身已经足够保守。
+        findings.extend(skill::check_frontmatter(doc, markdown));
+    }
+    for (index, finding) in findings.iter_mut().enumerate() {
+        finding.id = format!("f{}", index + 1);
+        if finding.verdict == Verdict::Broken {
+            finding.baseline = finding
+                .baseline_key()
+                .is_some_and(|entry| options.baseline.contains(&entry));
+        }
+    }
+    findings
 }
 
 fn finding_from(index: usize, token: Token, resolution: Resolution) -> Finding {
@@ -520,6 +543,101 @@ mod tests {
                     .collect();
             assert_eq!(verdicts, case.expect, "{} ({})", case.markdown, case.why);
         }
+    }
+
+    #[test]
+    fn link_targets_bind_as_paths_and_never_as_other_namespaces() {
+        let facts = FakeFacts {
+            paths: paths_with_ancestors(["docs/arch.md"]),
+            scripts: HashMap::from([(
+                "deploy".into(),
+                ScriptOrigin {
+                    manifest: "package.json".into(),
+                    kind: "npm".into(),
+                },
+            )]),
+            ..FakeFacts::default()
+        };
+        let findings = check_document(
+            "AGENTS.md",
+            "先读 [架构](docs/arch.md)，再看 [部署](docs/deploy.md)。\n\n[deploy](deploy) 这种目标就算和脚本重名也只按文件查。\n",
+            &facts,
+            &CheckOptions::default(),
+        );
+
+        assert_eq!(findings.len(), 3);
+        assert_eq!(findings[0].verdict, Verdict::Verified);
+        assert_eq!(findings[0].ns, Some(Namespace::Path));
+        // docs/ 目录存在，缺席的链接目标要咬得动。
+        assert_eq!(findings[1].verdict, Verdict::Broken);
+        assert_eq!(findings[1].ns, Some(Namespace::Path));
+        assert_eq!(findings[1].token, "docs/deploy.md");
+        // 目标和 npm script 重名也不走脚本绑定，链接只认文件树。
+        assert_eq!(findings[2].verdict, Verdict::Broken);
+        assert_eq!(findings[2].ns, Some(Namespace::Path));
+    }
+
+    #[test]
+    fn link_targets_respect_context_and_shape_guards() {
+        let facts = FakeFacts {
+            paths: paths_with_ancestors(["docs/arch.md"]),
+            ..FakeFacts::default()
+        };
+        let example = check_document(
+            "AGENTS.md",
+            "比如把结论写进 [周报](docs/weekly.md)。",
+            &facts,
+            &CheckOptions::default(),
+        );
+        assert_eq!(example[0].verdict, Verdict::Suspect);
+        let placeholder = check_document(
+            "AGENTS.md",
+            "模板见 [这里](path/to/notes.md)。",
+            &facts,
+            &CheckOptions::default(),
+        );
+        assert!(placeholder.is_empty());
+    }
+
+    #[test]
+    fn skill_frontmatter_joins_document_findings() {
+        let broken = check_document(
+            ".claude/skills/demo/SKILL.md",
+            "# 没有 frontmatter 的 skill\n",
+            &FakeFacts::default(),
+            &CheckOptions::default(),
+        );
+        assert_eq!(broken.len(), 1);
+        assert_eq!(broken[0].verdict, Verdict::Broken);
+        assert_eq!(broken[0].ns, Some(Namespace::SkillMeta));
+
+        let mut baselined_options = CheckOptions::default();
+        baselined_options.baseline.insert(BaselineEntry {
+            doc: ".claude/skills/demo/SKILL.md".into(),
+            token: "frontmatter".into(),
+            ns: Namespace::SkillMeta,
+        });
+        let baselined = check_document(
+            ".claude/skills/demo/SKILL.md",
+            "# 没有 frontmatter 的 skill\n",
+            &FakeFacts::default(),
+            &baselined_options,
+        );
+        assert!(baselined[0].baseline);
+
+        let disabled = CheckOptions {
+            enabled_resolvers: vec![Namespace::Path],
+            ..CheckOptions::default()
+        };
+        assert!(
+            check_document(
+                ".claude/skills/demo/SKILL.md",
+                "# 没有 frontmatter 的 skill\n",
+                &FakeFacts::default(),
+                &disabled,
+            )
+            .is_empty()
+        );
     }
 
     #[test]

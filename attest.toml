@@ -1,5 +1,5 @@
 [docs]
-include = ["README.md", "docs/**/*.md", ".claude/**/*.md"]
+include = ["AGENTS.md", "CLAUDE.md", "**/SKILL.md"]
 exclude = ["**/node_modules/**", "**/target/**"]
 
 [policy]

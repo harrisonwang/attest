@@ -3,74 +3,84 @@
   "generated_at": "2026-07-14",
   "submissions": [
     {
-      "repository": "facebook/react",
+      "repository": "react/react",
       "snapshot": "c0c39a6b3907eaab35f43074949e2957a2a734c1",
       "patch": "reports/upstream-patches/facebook-react.patch",
+      "pull_request": "https://github.com/react/react/pull/37008",
       "title": "docs(compiler): refresh Rust HIR reading paths",
-      "body": "## Summary\n\n- replace the removed `hir.rs` reference with the current HIR entry point, `lib.rs`\n- point reactive-pass readers at `reactive.rs` instead of the removed `reactive_function.rs`\n\n## Validation\n\nBoth replacement paths exist at the pinned repository snapshot, the patch passes `git apply --check`, and the modified instruction file has zero broken bindings under attest.\n\nThis docs-only correction was found with the attest static instruction-binding scan."
+      "body": "## Summary\n\n- Replace the removed `hir.rs` reference with the current HIR entry point, `lib.rs`.\n- Point reactive-pass readers at `reactive.rs` instead of the removed `reactive_function.rs`.\n\nThis keeps the compiler contributor reading list aligned with the current Rust module layout. The docs-only correction was found with the attest static instruction-binding scan.\n\n## How did you test this change?\n\n- Confirmed both replacement paths exist at the submitted base commit.\n- Ran the modified instruction file through attest with zero broken bindings.\n- Verified the branch is one clean commit on top of the current upstream base."
     },
     {
       "repository": "oven-sh/bun",
-      "snapshot": "5098c8dada2f6cb7f97ceb0358168a6d93d833d7",
+      "snapshot": "16c557635bb36baefea88e9fda23bd6eb04ed64c",
       "patch": "reports/upstream-patches/oven-sh-bun.patch",
+      "pull_request": "https://github.com/oven-sh/bun/pull/34135",
       "title": "docs: update moved runtime subsystem paths",
-      "body": "## Summary\n\n- update shell and Bake references to their current `src/runtime/` locations\n- keep the HTTP client at `src/http/` while pointing WebSocket client guidance to `src/http_jsc/websocket_client/`\n\n## Validation\n\nAll replacement directories exist at the pinned repository snapshot, the patch passes `git apply --check`, and both mirrored instruction entry points have zero broken bindings under attest.\n\nThis docs-only correction was found with the attest static instruction-binding scan."
+      "body": "### What does this PR do?\n\n- Updates shell and Bake references to their current `src/runtime/` locations.\n- Keeps the HTTP client at `src/http/` while pointing WebSocket client guidance to `src/http_jsc/websocket_client/`.\n\nThis docs-only correction was found with the attest static instruction-binding scan.\n\n### How did you verify your code works?\n\nAll replacement directories exist at the submitted base commit. Both mirrored instruction entry points report zero broken bindings under attest, and the branch is one clean commit on top of the current upstream base."
     },
     {
       "repository": "OpenHands/OpenHands",
       "snapshot": "5f9906fbdac3b30af7afa582af8845064dd43fc6",
       "patch": "reports/upstream-patches/openhands-openhands.patch",
+      "pull_request": "https://github.com/OpenHands/OpenHands/pull/15262",
       "title": "docs: refresh repository architecture guidance",
-      "body": "## Summary\n\n- remove the retired in-repository VS Code extension workflow\n- point frontend action guidance to the current event-content helpers\n- document the current user, organization, and repository skill sources\n- describe the SDK/backend-owned verified-model catalog and structured frontend API\n\n## Validation\n\nEvery replacement source and path was checked at the pinned repository snapshot, the patch passes `git apply --check`, and `AGENTS.md` has zero broken bindings under attest.\n\nThis docs-only correction was found with the attest static instruction-binding scan."
+      "body": "HUMAN:\n\n- [ ] A human has tested these changes.\n\nAGENT:\n\nThis docs-only correction was found with the attest static instruction-binding scan and manually reviewed against the submitted base commit.\n\n---\n\n## Why\n\nThe root architecture guide retained several paths and ownership descriptions that no longer match the repository.\n\n## Summary\n\n- Remove the retired in-repository VS Code extension workflow and update frontend action guidance.\n- Document the current user, organization, and repository skill sources.\n- Describe the SDK/backend-owned verified-model catalog and structured frontend API.\n\n## Issue Number\n\nN/A\n\n## How to Test\n\nRun `pre-commit run --files AGENTS.md`. The full configured hook set passes, and `AGENTS.md` reports zero broken bindings under attest.\n\n## Video/Screenshots\n\nN/A — documentation-only change.\n\n## Type\n\n- [ ] Bug fix\n- [ ] Feature\n- [ ] Refactor\n- [ ] Breaking change\n- [x] Docs / chore\n\n## Notes\n\nNo runtime behavior changes."
     },
     {
       "repository": "continuedev/continue",
-      "snapshot": "c5490d97eaa96cd20b570607d21f4bb4dd39fb9e",
+      "snapshot": "d0a3c0b626b5bebc3bef4742eec05a0242be0bab",
       "patch": "reports/upstream-patches/continuedev-continue.patch",
-      "title": "docs(cli): point MCP architecture to service modules",
-      "body": "## Summary\n\nReplace the removed `extensions/cli/src/mcp.ts` reference with the current `MCPService.ts`, `mcpTransports.ts`, and `mcpUtils.ts` service modules.\n\n## Validation\n\nAll three service files exist at the pinned repository snapshot, the patch passes `git apply --check`, and the modified CLI instructions have zero broken bindings under attest.\n\nThis docs-only correction was found with the attest static instruction-binding scan."
+      "pull_request": "https://github.com/continuedev/continue/pull/12985",
+      "title": "docs(cli): refresh auth and MCP architecture paths",
+      "body": "## Description\n\nRefresh the CLI architecture guide after Hub authentication removal and the MCP service split. The guide now points to `AuthService.ts`, the retained WorkOS compatibility helpers, `MCPService.ts`, `mcpTransports.ts`, and `mcpUtils.ts`. This docs-only correction was found with the attest static instruction-binding scan.\n\n## AI Code Review\n\n- **Team members only**: AI review runs automatically when PR is opened or marked ready for review\n- Team members can also trigger a review by commenting `@continue-review`\n\n## Checklist\n\n- [x] I've read the contributing guide\n- [x] The relevant docs have been updated\n- [x] No test changes are required for this documentation-only update\n\n## Screen recording or screenshot\n\nN/A — documentation-only change.\n\n## Tests\n\n- `npm run lint` completes with zero errors (two pre-existing warnings).\n- The edited file is formatter-clean.\n- The modified CLI instructions report zero broken bindings under attest."
     },
     {
       "repository": "vercel-labs/skills",
       "snapshot": "cf4a3ea678b7ea5066caa90de94bf2dfacde5538",
       "patch": "reports/upstream-patches/vercel-labs-skills.patch",
+      "pull_request": "https://github.com/vercel-labs/skills/pull/1681",
       "title": "docs: fix agent metadata script commands",
-      "body": "## Summary\n\nRun `validate-agents.ts` and `sync-agents.ts` through Node from the repository root instead of asking pnpm to treat `scripts/` as a separate package.\n\n## Validation\n\nBoth scripts are tracked and use Node shebangs, the patch passes `git apply --check`, and the modified instructions have zero broken bindings under attest.\n\nThis docs-only correction was found with the attest static instruction-binding scan."
+      "body": "## Summary\n\nRun `validate-agents.ts` and `sync-agents.ts` through Node from the repository root instead of asking pnpm to treat `scripts/` as a separate package.\n\n## Validation\n\n- `pnpm install --frozen-lockfile`\n- `node scripts/validate-agents.ts`\n- `node scripts/sync-agents.ts`\n- `pnpm format:check`\n- attest reports zero broken bindings in the modified instructions\n\nThis docs-only correction was found with the attest static instruction-binding scan."
     },
     {
       "repository": "alirezarezvani/claude-skills",
-      "snapshot": "0241f43765572f15146fcef692defbf96d473f37",
+      "snapshot": "8c4a374a443a6a97693a27210ad48da835f43f1d",
       "patch": "reports/upstream-patches/alirezarezvani-claude-skills.patch",
+      "pull_request": "https://github.com/alirezarezvani/claude-skills/pull/914",
       "title": "docs: fix pull request template path casing",
-      "body": "## Summary\n\nUpdate the related-documentation link to the tracked `.github/PULL_REQUEST_TEMPLATE.md` path.\n\n## Validation\n\nThe uppercase path exists at the pinned repository snapshot, the patch passes `git apply --check`, and the modified command README has zero broken bindings under attest.\n\nThis docs-only correction was found with the attest static instruction-binding scan."
+      "body": "## Summary\n\nUpdate the related-documentation link to the tracked `.github/PULL_REQUEST_TEMPLATE.md` path. This docs-only correction was found with the attest static instruction-binding scan.\n\n## Checklist\n\n- [x] **Target branch is `dev`**\n- [x] No hardcoded API keys, tokens, or secrets\n- [x] Follows the existing directory structure\n\n## Type of Change\n\n- [ ] New skill\n- [ ] Improvement to existing skill\n- [ ] Bug fix\n- [x] Documentation\n- [ ] Infrastructure / CI\n\n## Testing\n\nThe uppercase path exists at the submitted base commit, and the modified command README reports zero broken bindings under attest."
     },
     {
       "repository": "deanpeters/Product-Manager-Skills",
       "snapshot": "99be43c842d3b83cde87863ba4a63ade4c9cd84b",
       "patch": "reports/upstream-patches/deanpeters-product-manager-skills.patch",
+      "pull_request": "https://github.com/deanpeters/Product-Manager-Skills/pull/21",
       "title": "docs: remove missing transcript inventory",
       "body": "## Summary\n\nRemove the two absent local Product Porch transcript paths while retaining the canonical episode links already attached to the four released skills.\n\n## Validation\n\nThe local transcript files are absent at the pinned repository snapshot, the canonical episode links remain, the patch passes `git apply --check`, and `CLAUDE.md` has zero broken bindings under attest.\n\nThis docs-only correction was found with the attest static instruction-binding scan."
     },
     {
       "repository": "jeremylongshore/claude-code-plugins-plus-skills",
-      "snapshot": "7ca29e06dbfa73cdaf3f8448d2b6e6df740ec2b2",
+      "snapshot": "2d86dfbcf3e2b6f42d3bdbc940799186be230437",
       "patch": "reports/upstream-patches/jeremylongshore-claude-code-plugins-plus-skills.patch",
+      "pull_request": "https://github.com/jeremylongshore/claude-code-plugins-plus-skills/pull/1055",
       "title": "[skip auto-bump] docs(firebase): replace removed validation commands",
-      "body": "## Summary\n\n- replace three references to the removed `validate-all-plugins.sh` script with the authoritative `validate-skills-schema.py` validator\n- fix the traversal from the Firebase plugin directory back to the repository root\n\n## Validation\n\nThe validator and Firebase skill path exist at the pinned repository snapshot, both relative command paths resolve, the patch passes `git apply --check`, and the modified Firebase guidance has zero broken bindings under attest.\n\nThis intentionally does not edit the externally mirrored Mnemos files. This docs-only correction was found with the attest static instruction-binding scan."
+      "body": "## Type of Change\n\n- [x] 📚 Documentation improvement\n\n## Description\n\n**Summary:** Replace three references to the removed `validate-all-plugins.sh` script with the authoritative `validate-skills-schema.py` validator, and fix traversal from the Firebase plugin directory to the repository root.\n\n**Motivation:** The documented commands currently fail before validation starts. This intentionally does not edit the externally mirrored Mnemos files. The correction was found with the attest static instruction-binding scan.\n\n**Related Issues:** N/A\n\n## Checklist\n\n- [x] My changes follow the project's style and conventions\n- [x] I have performed a self-review of the change\n- [x] Documentation has been updated\n- [x] Code examples were tested and work\n- [x] Links and paths were verified\n\n## Testing Evidence\n\n**Test Environment:** macOS; Python 3\n\n**Test Commands Run:**\n\n```bash\npython3 scripts/validate-skills-schema.py \\\n  plugins/community/jeremy-firebase/skills/firebase-vertex-ai/SKILL.md \\\n  --marketplace\n./scripts/quick-test.sh\n```\n\n**Test Results:** The scoped authoritative validator grades the skill A (97/100); the repository build/lint quick test completes; attest reports zero broken bindings in the modified Firebase guidance.\n\n## Breaking Changes\n\n- [x] No\n\n## Performance Impact\n\n- [x] No performance impact\n\n## Security Considerations\n\nDocumentation-only command corrections; no runtime code, dependencies, permissions, or network behavior changed.\n\n## Rollback Plan\n\nRevert the single documentation commit."
     },
     {
       "repository": "NVIDIA/skills",
       "snapshot": "9559272b38d9e1dd9668cf746a87d1c5949c9a25",
       "patch": "reports/upstream-patches/nvidia-skills.patch",
+      "pull_request": "https://github.com/NVIDIA/skills/pull/344",
       "title": "docs: replace missing DICOM make target",
-      "body": "## Summary\n\nReplace the undocumented `make run-skill` command with the repository-contained fixture generator and metadata extractor flow.\n\n## Validation\n\nBoth Python scripts are tracked at the pinned repository snapshot, the generated fixture path matches the generator, the patch passes `git apply --check`, and the modified agent guide has zero broken bindings under attest.\n\nThis docs-only correction was found with the attest static instruction-binding scan."
+      "body": "## Onboarding type\n\n- [ ] New product onboarding (new `components.d/<slug>.yml` file)\n- [x] Other (catalog change, README fix, infrastructure, etc.)\n\n## All PRs\n\n- [x] All commits signed off with DCO (`git commit -s`).\n\n## Other context (for non-onboarding PRs)\n\nReplace the undocumented `make run-skill` command with the repository-contained fixture generator and metadata extractor flow. Both scripts were run end to end: the fixture was generated and metadata extraction returned modality `CT` with the expected path. The modified guide reports zero broken bindings under attest.\n\nThis docs-only correction was found with the attest static instruction-binding scan."
     },
     {
       "repository": "OpenHands/docs",
       "snapshot": "a7d418214914617674139b741d9d22691390457d",
       "patch": "reports/upstream-patches/openhands-docs.patch",
+      "pull_request": "https://github.com/OpenHands/docs/pull/621",
       "title": "docs: fix OpenHands REST OpenAPI path",
-      "body": "## Summary\n\nPoint the repository orientation guide at the tracked `openapi/V0_openapi.json` REST schema.\n\n## Validation\n\nThe replacement schema exists at the pinned repository snapshot, the patch passes `git apply --check`, and `AGENTS.md` has zero broken bindings under attest.\n\nThis docs-only correction was found with the attest static instruction-binding scan."
+      "body": "- [x] I have read and reviewed the documentation changes to the best of my ability.\n- [ ] If the change is significant, I have run the documentation site locally and confirmed it renders as expected.\n\n**Summary of changes**\n\nPoint the repository orientation guide at the tracked `openapi/V0_openapi.json` REST schema. The replacement exists at the submitted base commit, and `AGENTS.md` reports zero broken bindings under attest. This docs-only correction was found with the attest static instruction-binding scan."
     }
   ]
 }
